@@ -1,0 +1,14 @@
+fig:nice-fig
+tab:nice-tab
+prerequisites
+intro
+methodsLing
+stats1Descriptive
+lmDeterministic
+lmNondeterministic
+intermezzo-probability-and-probability-distributions
+lmML
+bayesLMs
+links
+bayesGLMs
+bayesHierGLMs

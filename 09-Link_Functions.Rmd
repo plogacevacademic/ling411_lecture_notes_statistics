@@ -1,0 +1,6 @@
+# Intermezzo: Link Functions and Transformations {#links}
+
+-- to-do --
+
+
+<!-- - direct inference for population parameters -->
