@@ -1,7 +1,0 @@
-# Bayesian LMs {#bayesLMs}
-
-
--- to-do --
-
-
-<!-- - direct inference for population parameters -->

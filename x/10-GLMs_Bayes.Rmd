@@ -1,6 +1,0 @@
-# Bayesian GLMs {#bayesGLMs}
-
--- to-do --
-
-
-<!-- - reasonably valid inference for population parameters, albeit on a transformed scale -->

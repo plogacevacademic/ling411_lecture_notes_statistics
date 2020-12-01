@@ -1,3 +1,0 @@
-# Hierarchical Bayesian (G)LMs {#bayesHierGLMs}
-
-<!-- - even more valid inference -->
