@@ -288,8 +288,8 @@ $$
 ```{r echo=FALSE}
 knitr::kable(rbind(
               c( paste0(mammalian_sleep$name[1], " (animal 1)"), "$X_1$", paste0(mammalian_sleep$sleep_total_h[1], " hours")),
-              c( paste0(mammalian_sleep$name[2], " (animal 2)"), "$X_4$", paste0(mammalian_sleep$sleep_total_h[2], " hours")),
-              c( paste0(mammalian_sleep$name[3], " (animal 3)"), "$X_4$", paste0(mammalian_sleep$sleep_total_h[3], " hours")),
+              c( paste0(mammalian_sleep$name[2], " (animal 2)"), "$X_2$", paste0(mammalian_sleep$sleep_total_h[2], " hours")),
+              c( paste0(mammalian_sleep$name[3], " (animal 3)"), "$X_3$", paste0(mammalian_sleep$sleep_total_h[3], " hours")),
               c( paste0(mammalian_sleep$name[4], " (animal 4)"), "$X_4$", paste0(mammalian_sleep$sleep_total_h[4], " hours")),
               c( paste0(mammalian_sleep$name[5], " (animal 5)"), "$X_5$", paste0(mammalian_sleep$sleep_total_h[5], " hours"))),
 col.names = c("the observation", "its symbol", "the observed value"),
