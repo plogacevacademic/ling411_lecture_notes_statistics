@@ -4,4 +4,4 @@ git add *
 git commit -a -m update
 git push
 cd website
-make
+./check_in.sh
