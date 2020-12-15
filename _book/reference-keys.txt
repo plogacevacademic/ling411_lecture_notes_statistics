@@ -1,6 +1,7 @@
 fig:histogram1
 fig:meanmedian
-tab:unnamed-chunk-35
+tab:unnamed-chunk-30
+fig:aflsd
 initial-remarks
 scalesOfMeasurement
 nominal-scale
@@ -25,4 +26,18 @@ interquartile-range
 aad
 variance
 sd
+bessels-correction-whats-up-with-all-those-n-1s-in-the-denominator
+summary-1
 which-measure-to-use
+errorless_lms
+single-variable-models
+multi-variable-models
+models-with-categorical-predictors
+centered-predictors
+main-effects-and-interactions
+interactions-between-continuous-predictors.
+centered-predictors-and-their-effect-on-main-effect-and-interaction-coefficients
+tab:unnamed-chunk-36
+eq:justcolor
+eq:interactions1
+eq:interactions2
