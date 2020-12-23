@@ -259,7 +259,6 @@ plot3d(cab_fares2$distance_km, cab_fares2$n_bridges, cab_fares2$fare_mnt,
 fit <- lm(fare_mnt ~ distance_km + n_bridges, data = cab_fares2)
 coefs <- coef(fit)
 planes3d(a = coefs["distance_km"], b = coefs["n_bridges"], c = -1, d = coefs["(Intercept)"], alpha = 0.5, col = "blue")
-
 planes3d(a = coefs["distance_km"], b = 0, c = -1, d = coefs["(Intercept)"], alpha = 1, col = "green")
 
 ```
@@ -542,7 +541,7 @@ $$ \text{fare} = a + b_1 * \text{cCabColorRed} + b_2 * \text{cCabSize9Seater} + 
 
 <!-- The plots below illustrate the relationship between the numerical contrasts and cab fare. -->
 
-
+### Treatment Contrasts
 - If we use treatment contrasts, the combinations of our predictors can be reduced to the four unique cases below. 
   * The first three columns indicate the encoding of the color contrast (yellow=0, red=1) and size contrast (5-seater=0, 9-seater=1), and the interaction predictor (the product of the previous two). 
   * The next column illustrates what happens when we plug these predictors into the equation above. In other words, it shows how we can construct the predicted fare from the coefficients of the linear model.
@@ -556,17 +555,17 @@ $$ \text{fare} = a + b_1 * \text{cCabColorRed} + b_2 * \text{cCabSize9Seater} + 
   
 <!-- Isn't there a good way to illustrate it with a difference? -->
   
-  (In understaning the above reasoning it may help not to focus on how $a,b_1,b_2$ and $b_3$ are obtained, but rather focus on how $a,b_1,b_2$ and $b_3$ would behave in the above equations if they corresponded to the meaning I assigned them.)
+(In understanding the above reasoning it may help not to focus on how $a,b_1,b_2$ and $b_3$ are obtained, but rather focus on how $a,b_1,b_2$ and $b_3$ would behave in the above equations if they corresponded to the meaning I assigned them.)
 
 |     | color | size | color $\cdot$ size
 |:----|:----|:-----|:-|:-|:-----|
-  |*(1a)*|$0$  | $0$| $0$ |$fare = a + 0 \cdot b_1  + 0 \cdot b_2 + 0 \cdot b_3$ | $= a$
-  |*(1b)*|$0$  | $1$| $0$ |$fare = a + 0 \cdot b_1  + 1 \cdot b_2 + 0 \cdot b_3$ | $= a + b_2$
-  |*(1c)*|$1$  | $0$| $0$ |$fare = a + 1 \cdot b_1  + 0 \cdot b_2 + 0 \cdot b_3$ | $= a + b_1$
-  |*(1d)*|$1$  | $1$| $1$ |$fare = a + 1 \cdot b_1  + 1 \cdot b_2 + 1 \cdot b_3$ | $= a + b_1 + b_2 + b_3$
+|*(1a)*|$0$  | $0$| $0$ |$fare = a + 0 \cdot b_1  + 0 \cdot b_2 + 0 \cdot b_3$ | $= a$
+|*(1b)*|$0$  | $1$| $0$ |$fare = a + 0 \cdot b_1  + 1 \cdot b_2 + 0 \cdot b_3$ | $= a + b_2$
+|*(1c)*|$1$  | $0$| $0$ |$fare = a + 1 \cdot b_1  + 0 \cdot b_2 + 0 \cdot b_3$ | $= a + b_1$
+|*(1d)*|$1$  | $1$| $1$ |$fare = a + 1 \cdot b_1  + 1 \cdot b_2 + 1 \cdot b_3$ | $= a + b_1 + b_2 + b_3$
   
 
-```{r, eval=T, fig.width=10, fig.height=5}
+```{r, eval=T, fig.width=10, fig.height=10}
 code_predictors_ex3B <- function(data, center) {
   if (center) {
     data$ccab_color_red <- data$cab_color_red - 0.5
@@ -586,7 +585,9 @@ basic_plot <- function(res)
     b2 = res$coefs[3];
     b3 = res$coefs[4];
     
-    p <- res$data %>% ggplot(aes(ccab_color_red, fare_mnt, color = as.factor(ccab_size_9seater) )) + geom_point(size=5)  + ylab("fare (MNT)") + xlab("cab color red")
+    p <- res$data %>% ggplot(aes(ccab_color_red, fare_mnt, color = as.factor(ccab_size_9seater) )) + 
+                      geom_point(size=5) + geom_label(aes(label = label, hjust= -2*scale(ccab_color_red) ))
+    p <- p + ylab("fare (MU)") + xlab("cab color red")
     p <- p + scale_color_discrete(name="ccab_size_9seater")
     p <- p + geom_hline(yintercept = 0, color = "lightgrey", alpha = .5) + 
               geom_vline(xintercept = 0, color = "lightgrey", alpha = .5)
@@ -597,35 +598,48 @@ basic_plot <- function(res)
     list(p=p, a=a, b1=b1, b2=b2, b3=b3)
 }
 
+labels <- data.frame(cab_color_red = c(0,0,1,1), cab_size_9seater = c(0,1,0,1), label = c("a","b","c","d"))
+cab_fares3B %<>% left_join(labels, by = c("cab_color_red", "cab_size_9seater"))
+
 res_noncentered <- code_predictors_ex3B(cab_fares3B, center = F)
 res <- basic_plot(res_noncentered)
-# res$p <- res$p + geom_abline(intercept = res$a, slope = res$b1, color = "red") # 
-# res$p <- res$p + geom_abline(intercept = res$a + res$b2, slope = res$b1, color = "red", linetype = "dashed")
-# res$p <- res$p + geom_abline(intercept = res$a + res$b2, slope = res$b1 + res$b3, color = "red")
+res$p <- res$p + geom_line(alpha=1, linetype = "dotted") + scale_x_continuous(breaks = c(0,1), limits = c(-.05,1.1)) + theme(legend.position="top")
 
-res$p <- res$p %>% labelled_slope_arrow(x_start = 0, y_start = res$a, x_end = 1, y_end = res$a + res$b1,
-                                x_label = .85, y_label = res$a + res$b1/2, label = "Slope b1", color = "green")
-res$p <- res$p %>% labelled_slope_arrow(x_start = 0, y_start = res$a, x_end = 0, y_end = res$a + res$b2,
+p1 <- res$p + ggtitle("Graphical representation of (a)")
+
+p2 <- res$p %>% labelled_slope_arrow(x_start = 0, y_start = res$a, x_end = 0, y_end = res$a + res$b2,
                                 x_label = .15, y_label = res$a + res$b2/2, label = "Slope b2", color = "cyan")
-res$p <- res$p %>% labelled_slope_arrow(x_start = 1, y_start = res$a+res$b1, x_end = 1, y_end = res$a+res$b1 + res$b2,
+p2 <- p2 + ggtitle("Graphical representation of (b)")
+
+p3 <- res$p %>% labelled_slope_arrow(x_start = 0, y_start = res$a, x_end = 1, y_end = res$a + res$b1,
+                                x_label = .85, y_label = res$a + res$b1/2, label = "Slope b1", color = "green")
+p3 <- p3 + ggtitle("Graphical representation of (c)")
+
+p4 <- p3 %>% labelled_slope_arrow(x_start = 1, y_start = res$a+res$b1, x_end = 1, y_end = res$a+res$b1 + res$b2,
                                 x_label = .85, y_label = res$a + res$b2, label = "Slope b2", color = "cyan")
-res$p <- res$p %>% labelled_slope_arrow(x_start = 1, y_start = res$a+res$b1+res$b2, x_end = 1, y_end = res$a+res$b1 + res$b2+ +res$b3,
+p4 <- p4 %>% labelled_slope_arrow(x_start = 1, y_start = res$a+res$b1+res$b2, x_end = 1, y_end = res$a+res$b1 + res$b2+ +res$b3,
                                 x_label = .85, y_label = res$a + res$b1 + res$b2, label = "Slope b3", color = "grey")
-p1 <- res$p
-print(p1)
+p4 <- p4 + ggtitle("Graphical representation of (c)")
+
+library(ggpubr)
+
+ggarrange(p1, p2, p3, p4)
 
 ```
 
 
+### Centered Contrasts (aka Sum Contrasts)
 - One of the problems with the above coefficient interpretations is that in most cases they are not quite what we are looking for. 
 - In most cases, we'll be interested in the average effect of cab color, the average effect of cab size, and the interaction between the two, and **not** in the effect of color for small cabs, the effect size for yellow cabs, and the interaction between the two. 
 - While we can compute one set of coefficients from the other, the former are far more informative.
+- Why would you want to invest several hours into learning how to do this with a linear model? (Because it'll save you **a lot** of headaches later on.)
+- In trying to understand how these contrasts work, please focus on what properties they have rather than on how I (or someone) came up with them. 
 
 - Using sum contrasts will give us more informative coefficients. The table below also illustrates that:
-  * The intercept $a$ corresponds to the average fare in the data set (the average of the rows (2a-d) is $a$). 
-  * The slope $b_1$ corresponds to the ** average** *effect of size* (the average of (2a,b) minus the average of (2c,d) is $b_1$).
-  * The slope $b_2$ corresponds to the ** average** *effect of color* (the average of (2a,c) minus the average of (2b,d) is $b_2$).
-  * The slope $b_3$ corresponds to the **additional** *effect of size for red cabs*. Alternatively, it can be understood as the  **additional** *effect of color for 9-seaters*.
+  * **The intercept $a$** corresponds to the **average** *fare* in the data set (the average of the rows (2a-d) is $a$). 
+  * **The slope $b_1$** corresponds to the **average** *effect of size* (the average of (2a,b) minus the average of (2c,d) is $b_1$).
+  * **The slope $b_2$** corresponds to the **average** *effect of color* (the average of (2a,c) minus the average of (2b,d) is $b_2$).
+  * **The slope $b_3$** corresponds to the **additional** *effect of size for red cabs*. Alternatively, it can be understood as the  **additional** *effect of color for 9-seaters*.
 
 <!-- Isn't there a good way to illustrate it with a difference? -->
   
@@ -637,11 +651,22 @@ print(p1)
   |*(2c)*|$+.5$  | $-.5$| $-.25$ | $fare = a + .5 \cdot b_1  - .5 \cdot b_2 - .25 \cdot b_3$ |
   |*(2d)*|$+.5$  | $+.5$| $+.25$ | $fare = a + .5 \cdot b_1  + .5 \cdot b_2 + .25 \cdot b_3$ |
   
-  $fare = a - .5 \cdot b_1  - .5 \cdot b_2 + .25 \cdot b_3$
-  $fare = a + .5 \cdot b_1  + .5 \cdot b_2 + .25 \cdot b_3$
-  
 
-```{r, eval=T, fig.width=10, fig.height=5}
+<!-- to-do:
+- Let's look at some averages
+
+  |      | color | size | color $\cdot$ size |      |
+  |:-----|:------|:-----|:-------|:-----|
+  |*(2a)*|$-.5$  | $-.5$| $+.25$ | $fare = a - .5 \cdot b_1  - .5 \cdot b_2 + .25 \cdot b_3$ | 
+  |*(2b)*|$-.5$  | $+.5$| $-.25$ | $fare = a - .5 \cdot b_1  + .5 \cdot b_2 - .25 \cdot b_3$ | 
+  |*(2c)*|$+.5$  | $-.5$| $-.25$ | $fare = a + .5 \cdot b_1  - .5 \cdot b_2 - .25 \cdot b_3$ |
+  |*(2d)*|$+.5$  | $+.5$| $+.25$ | $fare = a + .5 \cdot b_1  + .5 \cdot b_2 + .25 \cdot b_3$ |
+-->  
+
+<!-- to-do: This really calls for a 3D visualization -->
+<!-- to-do: Choose a bigger interaction next time. It's barely visible. -->
+
+```{r, eval=T, fig.width=15, fig.height=15}
 
 res_centered <- code_predictors_ex3B(cab_fares3B, center = T)
 res <- basic_plot(res_centered)
@@ -649,17 +674,57 @@ res <- basic_plot(res_centered)
 # res$p <- res$p + geom_abline(intercept = res$a + res$b2, slope = res$b1, color = "red", linetype = "dashed")
 # res$p <- res$p + geom_abline(intercept = res$a + res$b2, slope = res$b1 + res$b3, color = "red")
 
-res$p <- res$p %>% labelled_slope_arrow(x_start = 0, y_start = res$a, x_end = .5, y_end = res$a + res$b1/2,
-                                x_label = .35, y_label = res$a + res$b1/4, label = "Slope: b1/2", color = "green")
-res$p <- res$p %>% labelled_slope_arrow(x_start = .5, x_end = .5, y_start = res$a+res$b1/2, y_end = res$a+res$b1/2 + res$b2/2,
-                                x_label = .35, y_label = res$a + res$b1*3/4, label = "Slope: b2/2", color = "cyan")
-res$p <- res$p %>% labelled_slope_arrow(x_start = .5, x_end = .5, y_start = res$a+res$b1/2 + res$b2/2, y_end = res$a+res$b1/2 + res$b2/2 + res$b3/4,
-                                x_label = .35, y_label = res$a + res$b1  , label = "Slope: -b3/4", color = "grey")
-res$p <- res$p %>% labelled_slope_arrow(x_start = 0, y_start = res$a, x_end = -.5, y_end = res$a - res$b1/2,
-                                x_label = -.35, y_label = res$a - res$b1/4, label = "Slope: -b1/2", color = "green")
+res$p <- res$p + scale_x_continuous(breaks = c(-.5,.5), limits = c(-.7,.75)) + geom_line(alpha=1, linetype = "dotted")
 
-p2 <- res$p
-print(p2)
+res$p <-
+res$p + geom_segment(data=NULL, aes(x=-.5, y=res$a-0.5*res$b1, xend=.5, yend=res$a+0.5*res$b1), color = "green", linetype = "dotted") +
+        theme(legend.position="top")
+
+p0 <- res$p +  
+        geom_label(aes(x=-.5, y=res$a-0.5*res$b1, label = "Average\n of a & b"), hjust = 1.1, color = "green") + 
+        geom_label(aes(x=.5, y=res$a+0.5*res$b1, label = "Average\n of c & d"), hjust = -0.25, color = "green")
+
+p1 <- p0 %>% labelled_slope_arrow(x_start = 0, y_start = res$a, x_end = .5, y_end = res$a + res$b1/2,
+                                x_label = .35, y_label = res$a + res$b1/4, label = "Slope: 0.5⋅b", color = "green")
+p1 <- p1 %>% labelled_slope_arrow(x_start = 0, y_start = res$a, x_end = -.5, y_end = res$a - res$b1/2,
+                                x_label = -.35, y_label = res$a + res$b1/4, label = "Slope: -0.5⋅b", color = "green")
+
+
+p2a <- res$p %>% labelled_slope_arrow(x_start = .5, x_end = .5, y_start = res$a+res$b1/2, y_end = res$a+res$b1/2 + res$b2/2,
+                                x_label = .35, y_label = res$a + res$b1*3/4, label = "Slope: 0.5⋅b", color = "cyan") %>% 
+                labelled_slope_arrow(x_start = -.5, x_end = -.5, y_start = res$a-res$b1/2, y_end = res$a-res$b1/2 + res$b2/2,
+                                x_label = -.35, y_label = res$a - res$b1*1/4, label = "Slope: 0.5⋅b", color = "cyan")
+p2a <-
+p2a + geom_segment(data=NULL, aes(x=-.5, y=res$a-res$b1/2 + res$b2/2, xend=.5, yend=res$a+res$b1/2 + res$b2/2), color = "cyan", linetype = "dotted") +
+      geom_label(aes(x=-0, y=res$a + 1.3*res$b1, label = "Avg. effect of color & avg. effect of size for b,d"), hjust = .7, color = "cyan")
+
+
+p2b <- res$p %>% labelled_slope_arrow(x_start = .5, x_end = .5, y_start = res$a+res$b1/2, y_end = res$a+res$b1/2 - res$b2/2,
+                                x_label = .3, y_label = res$a, label = "Slope: 0.5⋅b", color = "cyan") %>% 
+                labelled_slope_arrow(x_start = -.5, x_end = -.5, y_start = res$a-res$b1/2, y_end = res$a-res$b1/2 - res$b2/2,
+                                x_label = -.3, y_label = res$a - res$b1*3/4, label = "Slope: 0.5⋅b", color = "cyan")
+p2b <-
+p2b + geom_segment(data=NULL, aes(x=-.5, y=res$a-res$b1/2 -res$b2/2, xend=.5, yend=res$a+res$b1/2 - res$b2/2), color = "cyan", linetype = "dotted") +
+        geom_label(aes(x=-0, y=res$a - 1.3*res$b1, label = "Avg. effect of color & avg. effect of size for b,d"), hjust = .3, color = "cyan")
+
+p2 <- res$p + 
+      geom_segment(data=NULL, aes(x=-.5, y=res$a-res$b1/2 + res$b2/2, xend=.5, yend=res$a+res$b1/2 + res$b2/2), color = "cyan", linetype = "dotted") + 
+      geom_segment(data=NULL, aes(x=-.5, y=res$a-res$b1/2 -res$b2/2, xend=.5, yend=res$a+res$b1/2 - res$b2/2), color = "cyan", linetype = "dotted")
+  
+p2c <- p2 + geom_label(aes(x=-0, y=res$a + 1.3*res$b1, label = "Avg. effect of color & avg. effect of size for b,d"), hjust = .7, color = "cyan") +
+      geom_label(aes(x=-0, y=res$a - 1.3*res$b1, label = "Avg. effect of color & avg. effect of size for b,d"), hjust = .3, color = "cyan")
+
+p3 <-
+p2 %>% labelled_slope_arrow(x_start = .5, x_end = .5, y_start = res$a+res$b1/2 + res$b2/2, y_end = res$a+res$b1/2 + res$b2/2 + res$b3/4,
+                                x_label = .35, y_label = res$a + res$b1  , label = "Slope: 0.25⋅b", color = "grey") %>% 
+        labelled_slope_arrow(x_start = .5, x_end = .5, y_start = res$a + res$b1/2 - res$b2/2, y_end = res$a + res$b1/2 - res$b2/2 - res$b3/4,
+                                x_label = .35, y_label = res$a + res$b1/2 - res$b2/2 , label = "Slope: -0.25⋅b", color = "grey") %>%
+        labelled_slope_arrow(x_start = -.5, x_end = -.5, y_start = res$a-res$b1/2 + res$b2/2, y_end = res$a-res$b1/2 + res$b2/2 - res$b3/4 ,
+                                x_label = -.3, y_label = res$a + res$b1/5  , label = "Slope: -0.25⋅b", color = "grey") %>%
+        labelled_slope_arrow(x_start = -.5, x_end = -.5, y_start = res$a-res$b1/2 - res$b2/2, y_end = res$a-res$b1/2 - res$b2/2 + res$b3/4 ,
+                                x_label = -.3, y_label = res$a - res$b1/2- res$b2/2  , label = "Slope: 0.25⋅b", color = "grey")
+
+ggarrange(p1, NULL, NULL, p2a, p2b, p2c, p3, p2, NULL )
 
 ```
 

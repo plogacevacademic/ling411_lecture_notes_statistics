@@ -1,0 +1,355 @@
+---
+output:
+  pdf_document: default
+  html_document: default
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+set.seed(123)
+
+is_interactive <- FALSE
+```
+
+
+```{r echo=FALSE, results='hide', message=FALSE}
+
+library(dplyr)
+library(magrittr)
+library(tidyr)
+library("scatterplot3d")
+library(magrittr)
+library(languageR)
+library(ggplot2)
+theme_set(theme_bw())
+
+library(rgl)
+library(knitr)
+knit_hooks$set(webgl = hook_webgl)
+
+# 
+# labelled_arrow <- function(p, x_start, y_start, x_end, y_end, x_label, y_label, label, color, arrowhead_size = unit(0.2, "cm")) {
+#     p + geom_segment(data=NULL, aes(x=x_start, y=y_start, xend=x_end, yend=y_end), 
+#                         color = color, arrow = arrow(length = arrowhead_size), size = 1) + 
+#           geom_text(x = x_label, y = y_label, label = label, color = color)
+# }
+# 
+# labelled_slope_arrow <- function(p, x_start, y_start, x_end, y_end, 
+#                                  x_label, y_label, label, color, 
+#                                  arrowhead_size = unit(0.2, "cm"))
+# {
+#     p <- p + geom_segment(data=NULL, aes(x=x_start, y=y_start, xend=x_end, yend=y_start), color = color, size = 1)
+#     p %>% labelled_arrow(x_start = x_end, y_start = y_start, x_end = x_end, y_end = y_end, 
+#                          x_label = x_label, y_label = y_label, label = label, color = color)
+# }
+
+source("./code/create_cab_data.R")
+
+```
+
+# Linear Models With Error {#lms_with_error}
+
+<!-- TODO: 
+  - Rewrite part below: Define linear models without the error term. (Why change the definition later, if I can start with the more useful one to begin with?)
+  - Start non-determinism with a one-parameter model: How much does it cost to take 
+-->
+
+- So far, we have been working with specific subsets of the data which kept all variables that were irrelevant for our present purposes constant (e.g., $distance=10~km$, $N_{bridges} = 0$). 
+- We were able to do that because we knew which variables are relevant since the dataset was created artificially. 
+- In real-life scenarios this is not always possible - not even when describing a deterministic system such as the cab fare pricing scheme. This is because:
+  1. We often don't know all the relevant variables.
+  2. We don't know in which ways they may interact.
+  3. Even if we knew all that, we may be left with very little data if we keep taking subsets with specific characteristics all the time. (For example, a dataset with $N_{bridges} = 0$ may not have a lot of rides with $distance > 1~km$ if the city has many bridges.)  
+
+- The bottom line is that in any realistic situation, we will omit relevant predictors from the model specification, because we don't know what they are, or couldn't (afford to them) record them. 
+- Let's look at how this would affect our analysis by applying a single-variable model to the data from section 4.2, which varies in distance an number of bridges.
+- We will apply the single-variable model in equation \@ref(eq:lmerrEq1) to a random(-ish) sample from the data from section 4.2 (*i.e., only yellow cabs, one passenger*). 
+- In a real-world scenario, we could use a model with missing predictors because because we did not consider those predictors relevant, or because we may not have information on them (*i.e., we didn't record the number of bridges on our taxi rides through town*).
+
+\begin{equation} 
+\text{fare} = a + b * \text{distance}
+(\#eq:lmerrEq1)
+\end{equation}
+
+- The plot below is not as clean as the previous plots - and it doesn't seem to be possible to perfectly describe all the points by one line. While the average fare seems to increase with distance, there is also some variability in the fare at most distances. This is because the number of bridge crossings is unaccounted for. It is as if we were looking at a photo of a three-dimensional plot which was taken from the side.
+
+
+```{r, fig.height=3, fig.width=5, fig.align='cener'}
+
+# set.seed(12345)
+cab_fares2_samp <- cab_fares2 %>% subset(distance_km <= 6 & n_bridges %in% c(0,1))
+# cab_fares2 %>% plyr::ddply("distance_km", function(df) {
+#   add <- with(df, distance_km %% 2)
+#   subset(df, n_bridges == add)
+# }) %>% subset(distance_km <= 11)
+
+
+# cab_fares2_samp[1:6,]
+# coef(lm(fare_mnt ~ distance_km, cab_fares2_samp))
+
+p1 <- cab_fares2_samp %>% ggplot(aes(distance_km, fare_mnt)) + geom_point(size=3) + xlab("distance") + ylab("fare (MU)")
+print(p1)
+```
+
+## A Whole Zoo of Models
+
+- There is a whole range of models we can use to describe these data. (The numbers next to the data points denote the **'errors'**, i.e., the deviations from the line.) 
+- Which would you choose?
+
+```{r, results='hide'}
+a2 = mean(cab_fares2_samp$fare_mnt); b2 = 0
+p2 <- p1 + geom_abline(intercept = a2, slope = b2, color = "orange")
+
+a3 = 9; b3 = 2.5
+p3 <- p1 + geom_abline(intercept = a3, slope = b3, color = "red")
+
+a4 = 4; b4 = 2.5
+p4 <- p1 + geom_abline(intercept = a4, slope = b4, color = "green")
+a5 = 6.5; b5 = 2.5
+p5 <- p1 + geom_abline(intercept = a5, slope = b5, color = "blue")
+
+compute_errors <- function(a, b) {
+  with(cab_fares2_samp, fare_mnt-(a+b*distance_km))
+}
+
+
+
+library(ggpubr)
+ggarrange(p2 + ggtitle("Possible Model 1"), p3 + ggtitle("Possible Model 2"), p4 + ggtitle("Possible Model 3"), p5 + ggtitle("Possible Model 4"))
+
+```
+
+
+```{r, results='hide'}
+a2 = mean(cab_fares2_samp$fare_mnt); b2 = 0
+p2 <- p1 + geom_abline(intercept = a2, slope = b2, color = "orange") +
+            geom_segment(aes(x=distance_km, xend=distance_km, y=fare_mnt, yend=(a2+b2*distance_km)), 
+                              color = "orange", arrow = arrow(length = unit(0.3, "cm")), size = 1) +
+            geom_label(aes(label=sprintf("%0.1f", fare_mnt-a2), hjust=1.25 )) + 
+            scale_x_continuous(limits = c(2,6))
+
+a3 = 9; b3 = 2.5
+p3 <- p1 + geom_abline(intercept = a3, slope = b3, color = "red") +
+            geom_segment(aes(x=distance_km, xend=distance_km, y=fare_mnt, yend=(a3+b3*distance_km)), 
+                              color = "red", arrow = arrow(length = unit(0.3, "cm")), size = 1) +
+            geom_label(aes(label=sprintf("%0.1f", fare_mnt-(a3+b3*distance_km)), hjust=1.25 )) + 
+            scale_x_continuous(limits = c(2,6))
+
+a4 = 4; b4 = 2.5
+p4 <- p1 + geom_abline(intercept = a4, slope = b4, color = "green") +
+            geom_segment(aes(x=distance_km, xend=distance_km, y=fare_mnt, yend=(a4+b4*distance_km)), 
+                              color = "green", arrow = arrow(length = unit(0.3, "cm")), size = 1) +
+            geom_label(aes(label=sprintf("%0.1f", fare_mnt-(a4+b4*distance_km)), hjust=1.25 )) + 
+            scale_x_continuous(limits = c(2,6))
+
+a5 = 6.5; b5 = 2.5
+p5 <- p1 + geom_abline(intercept = a5, slope = b5, color = "blue") +
+            geom_segment(aes(x=distance_km, xend=distance_km, y=fare_mnt, yend=(a5+b5*distance_km)), 
+                              color = "blue", arrow = arrow(length = unit(0.3, "cm")), size = 1) +
+            geom_label(aes(label=sprintf("%0.1f", fare_mnt-(a5+b5*distance_km)), hjust=1.25 )) + 
+            scale_x_continuous(limits = c(2,6))
+
+compute_errors <- function(a, b) {
+  with(cab_fares2_samp, fare_mnt-(a+b*distance_km))
+}
+
+
+
+library(ggpubr)
+ggarrange(p2 + ggtitle("Possible Model 1"), p3 + ggtitle("Possible Model 2"), p4 + ggtitle("Possible Model 3"), p5 + ggtitle("Possible Model 4"))
+
+```
+
+
+- One way to think about it is -- which model has the largest 'error'? 
+- ... And how shall we measure the error anyway? -- Well, we could use the individual **'errors'**, also called the **'residuals'**.
+- The table below summarizes the sum of absolute errors and the sum of squared errors. 
+- As you see, the sum of absolute errors is the same for models 2,3, and 4. And that makes sense, because the sum of 4 errors of magnitude 5, and 4 errors of magnitude 0 is the same as the sum of 8 errors of magnitude 2.5.
+- The sum of squared errors on the other hand is the lowest for model 4. This is because the sum of squared errors tends to be bigger for combinations of one big error and one small error ($5^2+0^2=25$), than for two medium-sized errors ($2.5^2+2.5^2 = 12.5$).
+- The sum of squared errors seems to match our intuition about model quality. Let's use it for now.
+
+|         | Sum of absolute errors | Sum of squared errors |
+|:--------|:------|:-----|:-|:-----|:--|
+| model 1 |`r sum(abs(compute_errors(a2, b2)))`  | `r sum((compute_errors(a2, b2))^2)`  
+| model 2 |`r sum(abs(compute_errors(a3, b3)))`  | `r sum((compute_errors(a3, b3))^2)`  |
+| model 3 |`r sum(abs(compute_errors(a4, b4)))`  | `r sum((compute_errors(a4, b4))^2)`  |
+| model 4 |`r sum(abs(compute_errors(a5, b5)))`  | `r sum((compute_errors(a5, b5))^2)`  |
+
+- Interesting, so different sets of parameters result in different sums of squared errors. If we could only create some sort of map of it in order to look at all the other options and find the best parameters (those that minimize that error).
+- It turns out, we can. What you see below is a plot of the sum of squared errors (y-axis), as a function of the values for the intercept $a$ (x-axis) and slope (z-axis). The red point marks parameter combination with the lowest error (`r sum(compute_errors(6.5, 2.5)^2)`). 
+- The key insight the plot should provide is that having a function which allows us to compare different models (also known as **the objective function**) allows us to select the best model, because all we have to do is find its minimum (i.e., the combination of intercept and slope with the smallest sum of squared errors). 
+
+<!-- find a good way to present this without the intercept-slope correlation  -->
+```{r, fig.height=10, fig.width=10, echo=FALSE, webgl=TRUE, results='hide'}
+
+# coefs <- coef(lm(fare_mnt ~ distance_km, cab_fares2_samp))
+# a = coefs[1]; b1 = coefs[2];
+
+f = function(a,b) {
+  sapply(1:length(a), function(i) sum(compute_errors(a[i], b[i])^2) )
+}
+
+# a5 = 6.5; b5 = 2.5
+plot3d(f, 
+       col = colorRampPalette(c("blue", "white")), 
+       xlab = "Intercept", ylab = "Slope", zlab = "Sum of squares", 
+       xlim = 6.5+c(-1, 1), ylim = 2.5+c(-1, 1),
+       aspect = c(1, 1, 0.5))
+points3d(x=6.5, y=2.5, z = sum(compute_errors(6.5, 2.5)^2), color = "red", size = 10)
+# 
+# 
+# plot3d(f, 
+#        col = colorRampPalette(c("blue", "white")), 
+#        xlab = "Intercept", ylab = "Slope", zlab = "sum of squares", 
+#        xlim = 6.5+c(-.1, .1), ylim = 2.5+c(-.1, .1),
+#        aspect = c(1, 1, 0.5))
+# points3d(x=6.5, y=2.5, z = sum(compute_errors(6.5, 2.5)^2), color = "red", size = 10)
+# 
+# 
+# 
+# sq_err_map <-
+# plyr::ldply(seq(1, 10, 1), function(a) {
+#   plyr::ldply(seq(0, 5, .5), function(b) {
+#     err <- ( compute_errors(a, b) )^2 %>% sum() 
+#     data.frame(a, b, err)
+#   })
+# })
+# 
+# ggplot(sq_err_map, aes(a, b, color = err)) + geom_point(size=5)
+# 
+# 
+# 
+# plot3d(sq_err_map$a, sq_err_map$b, sq_err_map$err, 
+#        #type = "s", col = "red", 
+#        radius = .75,
+#        xlab="Distance (km)", ylab="N bridges", zlab="Fare (MU)")
+# 
+# 
+#  open3d()
+#   x <- sort(rnorm(1000))
+#   y <- rnorm(1000)
+#   z <- rnorm(1000) + atan2(x, y)
+#   plot3d(x, y, z, col = rainbow(1000))
+# 
+```
+
+## An Updated Linear Model
+
+- In the previous chapter, our system was deterministic since we knew every every variable that mattered and how it was to be included into the linear model equation. Once we fail to account for some predictors that matter, the system becomes non-deterministic - we can't predict the fare exactly. In this case, this means that we can't predict the exact fare, if we don't know how many bridges were crossed on that taxi ride.  
+
+- Unlike previously, we can't solve a set of equations to arrive at coefficients that describe the data perfectly. But what we can do, is choose the coefficients such that the fare is predicted as well as possible. While we can't account for all variation in the fare, we can at least account for some of the structure in it - and all the plots show that there is *some* structure.
+
+- In order to account for omitted variables (or possibly true randomness in the data), we need to modify the linear model equation to the form below. 
+
+$$ \underbrace{y_i}_{\text{Observed value}} =
+  \overbrace{\underbrace{a}_{\text{Intercept}}}^{\text{additive term}} + 
+  \overbrace{\underbrace{b_1}_{\text{Slope}} * \underbrace{{x_1}_i}_{Predictor}}^{\text{additive term}} + 
+  \overbrace{\underbrace{b_2}_{\text{Slope}} * \underbrace{{x_2}_i}_{Predictor}}^{\text{additive term}} +  
+  \ldots +
+  \underbrace{\epsilon_i}_{Error}$$
+  
+- The new element here is the *error term* $\epsilon$, while the rest of the equation is as previously. You can think of the equation as consisting of *three components*.
+  1. The intercept accounts for all *constants*, as well as the *average effect* of the omitted (and possibly even unknown predictors). 
+  
+  <!-- (Importantly, the same would happen if those variables were not omitted, but their predictors were centered.) -->
+  <!-- Improve the phrasing above. -->
+  <!-- There is a lot to expand upon in that above statment. -->
+  
+  2. The slopes account for all *variable effects* due to known predictors.
+
+  3. Meanwhile, the error $\epsilon$ term accounts for all *variable effects* due to omitted predictors. All errors need to sum to zero. (If they didn't, that part should go to the intercept.)
+
+  <!-- In regular linear models, we assume that $\epsilon$ follows a **normal distribution** with mean 0, and some unknown standard deviation $\sigma$. Assuming that it has a mean of 0 simply means that all deviations from the value predicted by the linear model sum to zero, which usually has the implication that *the line that the linear model describes is supposed to go through the point cloud*. -->
+
+<!-- This is where the motivation for using the normal distribution goes. -->
+
+
+
+
+
+
+
+
+
+
+# Examples
+
+### The Dative Verbs data
+
+- I want to know if the length of the theme and the recipient influence the proportion of recipient-theme word orders, and by how much. (In this sample.)
+- 
+
+```{r eval=F}
+
+library(dplyr)
+library(magrittr)
+library(ggplot2)
+library(languageR)
+
+dative_relevant <- dative %>% dplyr::select(RealizationOfRecipient, LengthOfRecipient, LengthOfTheme)
+
+dative_relevant %<>% mutate( cat_LengthOfRecipient = ifelse(LengthOfRecipient > median(LengthOfRecipient) , "long", "short") %>% as.factor() )
+dative_relevant %<>% mutate( cat_LengthOfTheme = ifelse(LengthOfTheme > median(LengthOfTheme) , "long", "short") %>% as.factor() )
+
+dative_summary1 <- dative_relevant %>% group_by(LengthOfRecipient) %>% summarize(perc_np = mean(RealizationOfRecipient == "NP"), N = n())
+ggplot(dative_summary1, aes(x= LengthOfRecipient, perc_np)) + geom_point(aes(size = N))
+
+dative_summary2 <- dative_relevant %>% group_by(cat_LengthOfRecipient) %>% summarize(perc_np = mean(RealizationOfRecipient == "NP"), N = n())
+p <- ggplot(dative_summary2, aes(x= cat_LengthOfRecipient, perc_np)) + geom_point()
+
+coef(lm( perc_np ~ 1 + contr1_LengthOfRecipient, data = dative_summary2))
+
+# Query to lm, with a model specification:
+# perc_np = a*1 + b*contr1_LengthOfRecipient
+
+# Answer: 
+# perc_np = 0.8752244*1 + -0.4269152*contr1_LengthOfRecipient
+
+p <- ggplot(dative_summary2, aes(x= contr1_LengthOfRecipient, perc_np)) + geom_point()
+p + geom_abline(intercept = 0.8752244, slope = -0.4269152)
+ 
+
+
+dative_summary2 <-
+dative_relevant %>% group_by(cat_LengthOfTheme) %>% summarize(perc_def = mean(RealizationOfRecipient == "NP"), N = n() ) 
+
+dative_summary2 %>% ggplot(aes(cat_LengthOfTheme, perc_def)) + geom_point()
+
+dative_summary2$cLT <- dative_summary2$cat_LengthOfTheme %>% dplyr::recode("short"=0, "long"=1)
+
+coef(lm(perc_def ~ 1 + cLT, data = dative_summary2))
+a = 0.6821904   
+b = 0.1436309 
+
+dative_summary3 <-
+dative_relevant %>% group_by(cat_LengthOfTheme, cat_LengthOfRecipient) %>% summarize(perc_def = mean(RealizationOfRecipient == "NP"), N = n() ) 
+dative_summary2 %>% ggplot(aes(cat_LengthOfTheme, perc_def)) + geom_point()
+
+dative_summary3 %>% ggplot(aes( cat_LengthOfRecipient, perc_def, color = cat_LengthOfTheme, group = cat_LengthOfTheme)) + geom_point() + geom_line()
+
+dative_summary3 %<>% mutate( cLR = dplyr::recode(cat_LengthOfRecipient, "short"=-.5, "long"=.5),
+                             cLT = dplyr::recode(cat_LengthOfTheme, "short"=-.5, "long"=.5)
+                            )
+
+coef(lm(perc_def ~ 1 + cLT + cLR + cLT*cLR, data = dative_summary3))
+
+dative_summary3 %>% group_by(cLT) %>% summarize(perc_def = mean(perc_def))
+  
+```
+
+### The Sleep Data
+
+- I want to know if 
+
+```{r }
+
+  mammalian_sleep <- 
+      read.csv("./data/msleep_ggplot2.csv") %>% 
+      dplyr::select(name, sleep_total, bodywt) %>%
+      dplyr::rename(sleep_total_h = sleep_total, bodywt_kg = bodywt) %>%
+      dplyr::mutate(sleep_total_h = round(sleep_total_h) )
+
+head(mammalian_sleep)
+```
