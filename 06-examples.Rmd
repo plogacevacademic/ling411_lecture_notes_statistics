@@ -1,0 +1,234 @@
+---
+output:
+  pdf_document: default
+html_document: default
+editor_options: 
+  chunk_output_type: console
+---
+  
+```{r include=FALSE}
+knitr::opts_chunk$set(echo = T)
+set.seed(123)
+
+is_interactive <- FALSE
+```
+
+
+```{r echo=FALSE, results='hide', message=FALSE, echo = F}
+
+library(dplyr)
+library(magrittr)
+library(tidyr)
+library("scatterplot3d")
+library(magrittr)
+library(languageR)
+library(ggplot2)
+theme_set(theme_bw())
+
+library(rgl)
+library(knitr)
+knit_hooks$set(webgl = hook_webgl)
+
+# 
+# labelled_arrow <- function(p, x_start, y_start, x_end, y_end, x_label, y_label, label, color, arrowhead_size = unit(0.2, "cm")) {
+#     p + geom_segment(data=NULL, aes(x=x_start, y=y_start, xend=x_end, yend=y_end), 
+#                         color = color, arrow = arrow(length = arrowhead_size), size = 1) + 
+#           geom_text(x = x_label, y = y_label, label = label, color = color)
+# }
+# 
+# labelled_slope_arrow <- function(p, x_start, y_start, x_end, y_end, 
+#                                  x_label, y_label, label, color, 
+#                                  arrowhead_size = unit(0.2, "cm"))
+# {
+#     p <- p + geom_segment(data=NULL, aes(x=x_start, y=y_start, xend=x_end, yend=y_start), color = color, size = 1)
+#     p %>% labelled_arrow(x_start = x_end, y_start = y_start, x_end = x_end, y_end = y_end, 
+#                          x_label = x_label, y_label = y_label, label = label, color = color)
+# }
+
+source("./code/create_cab_data.R")
+
+```
+
+
+
+# Examples
+
+## The Dative Verbs Data
+
+- I want to know if the length of the theme and the recipient influence the proportion of recipient-theme word orders, and by how much. (In this sample!)
+
+- Let's prepare the data.
+```{r}
+
+# load all packages that will be required
+library(dplyr)
+library(magrittr)
+library(ggplot2)
+library(languageR)
+
+# create a data frame with the required columns 
+dative_relevant <- dative %>% dplyr::select(RealizationOfRecipient, LengthOfRecipient, LengthOfTheme)
+
+# take a look
+head(dative_relevant, 3)
+
+# discretize length of recipient 
+dative_relevant %<>% mutate( cat_LengthOfRecipient = ifelse(LengthOfRecipient > median(LengthOfRecipient) , "long", "short") %>% as.factor() )
+dative_relevant %<>% mutate( cat_LengthOfTheme = ifelse(LengthOfTheme > median(LengthOfTheme) , "long", "short") %>% as.factor() )
+
+```
+
+
+
+### By Length of Recipient
+
+- Now, let's summarize and plot it
+```{r}
+# compute percentage of default word orders by categorical recipient length
+(dative_summary1 <- dative_relevant %>% 
+  group_by(cat_LengthOfRecipient) %>% 
+  summarize(perc_def = mean(RealizationOfRecipient == "NP"), 
+            N = n()))
+# plot averages
+ggplot(dative_summary1, aes(x= cat_LengthOfRecipient, perc_def)) + geom_point()
+```
+
+- Now, let's fit a mode with treatment contrasts and look at its coefficients.
+```{r}
+# Fit model 1A (treatment contrasts):
+# Fit a linear model with treatment contrasts according to the following specification:
+#  perc_def = a + b*length of recipient 
+
+# create a treatment contrast for (categorical) length ('ct' is for 'contrast, treatment')
+dative_summary1 %<>% mutate(ct_LR = dplyr::recode(cat_LengthOfRecipient, "short"=0, "long"=1))
+
+# use coef(lm(...)) to fit the linear model described above and extract its coefficients
+coef(lm( perc_def ~ 1 + ct_LR, data = dative_summary1))
+```
+
+- Now, let's fit a mode with sum contrasts and look at its coefficients.
+```{r}
+# Fit model 1B (sum contrasts):
+# Fit a linear model with sum contrasts according to the following specification:
+#  perc_def = a + b*length of recipient 
+
+# create a treatment contrast for (categorical) length ('cs' is for 'contrast, sum')
+dative_summary1 %<>% mutate(cs_LR = dplyr::recode(cat_LengthOfRecipient, "short"=-.5, "long"=.5))
+
+# use coef(lm(...)) to fit the linear model described above and extract its coefficients
+coef(lm( perc_def ~ 1 + cs_LR, data = dative_summary1))
+```
+
+### By Length of Theme
+
+- Now, let's summarize and plot the averages.
+```{r}
+# compute percentage of default word orders by categorical theme length
+(dative_summary2 <- dative_relevant %>% 
+                      group_by(cat_LengthOfTheme) %>% 
+                      summarize(perc_def = mean(RealizationOfRecipient == "NP"), 
+                                N = n()))
+# plot averages
+ggplot(dative_summary2, aes(x= cat_LengthOfTheme, perc_def)) + geom_point()
+```
+
+- Now, let's fit a mode with treatment contrasts and look at its coefficients.
+```{r}
+# Fit model 2A (treatment contrasts):
+# Fit a linear model with treatment contrasts according to the following specification:
+#  perc_def = a + b*length of theme 
+
+# create a treatment contrast for (categorical) length ('ct' is for 'contrast, treatment')
+dative_summary2 %<>% mutate(ct_LT = dplyr::recode(cat_LengthOfTheme, "short"=0, "long"=1))
+
+# use coef(lm(...)) to fit the linear model described above and extract its coefficients
+coef(lm( perc_def ~ 1 + ct_LT, data = dative_summary2))
+```
+
+- Now, let's fit a mode with sum contrasts and look at its coefficients.
+```{r}
+# Fit model 1B (sum contrasts):
+# Fit a linear model with sum contrasts according to the following specification:
+#  perc_def = a + b*length of recipient 
+
+# create a treatment contrast for (categorical) length ('ct' is for 'contrast, treatment')
+dative_summary2 %<>% mutate(cs_LR = dplyr::recode(cat_LengthOfTheme, "short"=-.5, "long"=.5))
+
+# use coef(lm(...)) to fit the linear model described above and extract its coefficients
+coef(lm( perc_def ~ 1 + cs_LR, data = dative_summary1))
+```
+
+
+### By Length of Recipient and Length of Theme
+
+- Now, let's summarize and plot the averages.
+
+```{r}
+# compute percentage of default word orders by categorical theme and recipient length
+(dative_summary3 <-
+  dative_relevant %>% group_by(cat_LengthOfTheme, cat_LengthOfRecipient) %>% 
+  summarize(perc_def = mean(RealizationOfRecipient == "NP"), 
+            N = n() ))
+
+# plot averages
+dative_summary3 %>% ggplot(aes( cat_LengthOfRecipient, perc_def, color = cat_LengthOfTheme, group = cat_LengthOfTheme)) + geom_point() + geom_line()
+```
+
+- Now, let's fit a mode with treatment contrasts and look at its coefficients.
+```{r}
+# Fit model 2A (treatment contrasts):
+# Fit a linear model with treatment contrasts according to the following specification:
+#  perc_def = a + b1*length of theme + b2*length of recipient + b3*length of theme*length of recipient
+
+# create a treatment contrast for (categorical) length ('ct' is for 'contrast, treatment')
+dative_summary3 %<>% mutate( ct_LR = dplyr::recode(cat_LengthOfRecipient, "short"=0, "long"=1),
+                             ct_LT = dplyr::recode(cat_LengthOfTheme,     "short"=0, "long"=1)
+                            )
+
+# use coef(lm(...)) to fit the linear model described above and extract its coefficients
+coef(lm( perc_def ~ 1 + ct_LT + ct_LR + ct_LT:ct_LR, data = dative_summary3))
+```
+
+
+- Please verify the meaning of the coefficients in the above plots, data frames and other models
+  * **Intercept:** The `perc_def` value for the baseline value (i.e., short theme and short recipient). 
+  * **Main effect**, coefficient for `ct_LT`: The effect of theme length when the recipient is short.
+  * **Main effect**, coefficient for `ct_LR`: The effect of recipient length when the theme is short.
+  * **Interaction**, coefficient for `ct_LT:ct_LR`: The *additional* effect of theme length when the the recipient is long. (*or:* The *additional* effect of **recipient** length when the the **theme** is long.)  
+
+
+- Now, let's fit a mode with sum contrasts and look at its coefficients.
+```{r}
+# Fit model 1B (sum contrasts):
+# Fit a linear model with sum contrasts according to the following specification:
+#  perc_def = a + b1*length of theme + b2*length of recipient + b3*length of theme*length of recipient
+
+# create a sum contrast for (categorical) length ('cs' is for 'contrast, sum')
+dative_summary3 %<>% mutate( cs_LR = dplyr::recode(cat_LengthOfRecipient, "short"=-.5, "long"=.5),
+                             cs_LT = dplyr::recode(cat_LengthOfTheme, "short"=-.5, "long"=.5)
+)
+
+# use coef(lm(...)) to fit the linear model described above and extract its coefficients
+coef(lm( perc_def ~ 1 + ct_LT + ct_LR + ct_LT:ct_LR, data = dative_summary3))
+```
+
+- Please verify the meaning of the coefficients in the above plots, data frames and other models:
+  * **Intercept:** Average percentage of default word orders.
+  * **Main effect**, coefficient for `ct_LT`: Average effect of length of the theme.
+  * **Main effect**, coefficient for `ct_LR`: Average effect of length of the recipient.
+  * **Interaction**, coefficient for `ct_LT:ct_LR`: Change in the effect of `ct_LR` due to one unit of change in `ct_LT`. (*or:* Change in the effect of `ct_LT` due to one unit of change in `ct_LR`.)  
+  
+## The Sleep Data
+  
+  <!-- - I want to know if -->
+  
+```{r eval=F}
+
+mammalian_sleep <- 
+  read.csv("./data/msleep_ggplot2.csv") %>% 
+  dplyr::select(name, sleep_total, bodywt) %>%
+  dplyr::rename(sleep_total_h = sleep_total, bodywt_kg = bodywt) %>%
+  dplyr::mutate(sleep_total_h = round(sleep_total_h) )
+
+head(mammalian_sleep)
+```
