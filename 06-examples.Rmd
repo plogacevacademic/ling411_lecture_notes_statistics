@@ -189,7 +189,6 @@ dative_summary3 %<>% mutate( ct_LR = dplyr::recode(cat_LengthOfRecipient, "short
 coef(lm( perc_def ~ 1 + ct_LT + ct_LR + ct_LT:ct_LR, data = dative_summary3))
 ```
 
-
 - Please verify the meaning of the coefficients in the above plots, data frames and other models
   * **Intercept:** The `perc_def` value for the baseline value (i.e., short theme and short recipient). 
   * **Main effect**, coefficient for `ct_LT`: The effect of theme length when the recipient is short.
