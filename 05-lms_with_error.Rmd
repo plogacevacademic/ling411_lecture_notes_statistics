@@ -266,7 +266,7 @@ $$ \underbrace{y_i}_{\text{Observed value}} =
 <!-- This is where the motivation for using the normal distribution goes. -->
 
 
-
+<!-- to-do: Add a good example with proper errors -->
 
 
 

@@ -216,10 +216,13 @@ coef(lm( perc_def ~ 1 + ct_LT + ct_LR + ct_LT:ct_LR, data = dative_summary3))
   * **Main effect**, coefficient for `ct_LT`: Average effect of length of the theme.
   * **Main effect**, coefficient for `ct_LR`: Average effect of length of the recipient.
   * **Interaction**, coefficient for `ct_LT:ct_LR`: Change in the effect of `ct_LR` due to one unit of change in `ct_LT`. (*or:* Change in the effect of `ct_LT` due to one unit of change in `ct_LR`.)  
-  
+
+
+
+<!--
 ## The Sleep Data
   
-  <!-- - I want to know if -->
+- I want to know if bigger animals sleep more.
   
 ```{r eval=F}
 
@@ -230,4 +233,7 @@ mammalian_sleep <-
   dplyr::mutate(sleep_total_h = round(sleep_total_h) )
 
 head(mammalian_sleep)
+
+ggplot(mammalian_sleep, aes(bodywt_kg, sleep_total_h)) + geom_point()
 ```
+-->
