@@ -6,6 +6,7 @@ eq:justcolor
 eq:interactions1
 eq:interactions2
 eq:lmerrEq1
+fig:illustrationModel1
 initial-remarks
 scalesOfMeasurement
 nominal-scale
@@ -61,6 +62,11 @@ classical-probability
 frequentist-probability
 bayesian-probability
 the-laws-of-probability
-mutually-exclusive-events
+examples-2
 independent-events
+examples-3
+mutually-exclusive-events
+examples-4
 conditional-probability
+examples-5
+a-first-statistical-model

@@ -199,33 +199,64 @@ Probabilities of events which depend on each other, are also dependent.
 
     1. For any event A, the probability of A, written as P(A), is a number between 0 and 1.
     
-    2. The probabilities of *all possible events* must sum to to 1. (**Law of total probability**)
+    2. **Law of total probability:** The probabilities of *all possible events* must sum to to 1.
     
-    3. The probabilities of an event occuring and an event not occuring must sum 1. (**Law of complements**)
-    
-#### Mutually exclusive events
+    3. **Law of complements:** The probabilities of an event occuring and an event not occuring must sum 1.
 
-- **Mutually exclusive events**: Events that cannot happen at the same time. For example, a 6-sided die **coming up with an even number** ($A_1$) and **coming up '3'** ($A_2$). (*Please note: events are not complementary, but mutually exclusive.*)
+#### Examples
 
-- For two events $A_1, A_2$ which are mutually exclusive, the probability that one of the events occurs ($P(A_1~or~A_2)$) is the sum of their probabilities $P(A_1) + P(A_2)$.
+1. ...
 
-- For two events $A_1, A_2$ which are *not* mutually exclusive, the probability that one of the events occurs ($P(A_1~or~A_2)$) is $P(A_1) + P(A_2) - P(A_1~and~A_2)$. (**Additive law of probability**)
+2. ...
+
+3. ...
+
 
 #### Independent events
 
-- **Independent events**: Events for which the probability of the occurrence of one of them (say, $A_1$) does *not depend* on whether or not the other one (say, $A_2$) has occurred or will occur.
+- **Independent events**:
+  * Events for which the probability of the occurrence of one of them ($A_1$) does *not depend* on whether or not the other one ($A_2$) has occurred or will occur.
 
-- For two independent events $A_1, A_2$, the probability of both events occurring (**the joint probability of $A_1$ and $A_2$** $P(A_1~and~A_2)$ or $P(A_1, A_2)$) is the product of their probabilities: $P(A_1) \cdot P(A_2)$.
+- For two independent events $A_1$ and $A_2$, the probability of both events occurring (**the joint probability of $A_1$ and $A_2$**) is the product of their probabilities: 
+$$P(A_1, A_2) = P(A_1) \cdot P(A_2)$$
+
+#### Examples
+- A fair coin coming first heads, then tails.
+- Rain in Istanbul, and Rain in Sydney
+- ... can you think of other examples?
+
+#### Mutually exclusive events
+
+- **Mutually exclusive events**: Events that cannot happen at the same time. 
+  * Can be a logical contradiction, like a 6-sided die **coming up with an even number** ($A_1$) and **coming up '3'** ($A_2$). 
+  * Events can also be mutually exclusive without being a *logical contradiction*: For example, reporting feeling happy and sad at the same time. (But mutually exclusive events will always be in contradiction *vis á vis* the system that generates the events.)
+
+
+- **Additive law of probability:** For two *any* events $A_1, A_2$, the probability that one of the events occurs is:
+
+$$P(A_1~or~A_2) = P(A_1) + P(A_2) - P(A_1~and~A_2)$$ 
+
+- **Special case:** For two *mutually exclusive* events $A_1, A_2$ the probability that one of the events occurs is the sum of their probabilities: 
+$$P(A_1~or~A_2) = P(A_1) + P(A_2)$$
+
+#### Examples
+- A coin coming up heads and tails at the same time.
+- Heavy rain in Istanbul for more than a day, and no flooding in Istanbul
+- ... can you think of other examples?
 
 
 #### Conditional probability
 - **Conditional probability**: The conditional probability of event $A_1$ given event $A_2$ is the probability that event $A_1$ will occur (or has occured), given that $A_2$ has occured (or will occur).
 
-- For two events, the conditional probability $P(A_1|A_2)$ is $P(A_1,A_2) / P(A_2)$.
+- **Definition of conditional probability:** For two events, the conditional probability $P(A_1|A_2)$ is $P(A_1,A_2) / P(A_2)$.
 
-- For two independent events, the conditional probability $P(A_1|A_2)$ is just $P(A_1)$.
+- **Special case 1:** For two independent events, the conditional probability $P(A_1|A_2) = P(A_1)$.
 
-- For mutually exclusive events, the conditional probability $P(A_1|A_2)$ is $0$.
+- **Special case 2:** For mutually exclusive events, the conditional probability $P(A_1|A_2) = 0$.
+
+#### Examples
+- The probability of having a disease given that a test says so
+- The probability of a test saying that you have a disease given that you do
 
 <!--
 to-do:
@@ -248,4 +279,24 @@ to-do:
 - **Odds**: Probabilites can also be represented as the odds of something happening, where odds of of 4:3 mean that the event has a probability of $4/(4+3)$.
 -->
 
+### A First Statistical Model
 
+*(This will be a somewhat clumsy model, and we'll develop a better one later.)*
+
+- The main aim of a generative model is to describe how the data we observed is generated.
+- Let's create a simple model of observed word order, with the following assumptions
+
+![(\#fig:illustrationModel1)A schematic of a first model.](img/treemodel1b.jpg) 
+- It follows from this model that the following observations have the following probabilities:
+
+| recipient  | default word order? | probability |
+|:-----------|:--------------------|:------------|
+| animate    | $1$                 | $p_1$|
+| animate    | $0$                 | $1-p_1$|
+| inanimate  | $1$                 | $p_2$|
+| inanimate  | $0$                 | $1-p_2$|
+
+- Doesn't this mean that we could even compute the is the probability of the data, if we only knew $p_1$, and $p_2$? Absolutely!
+- The probability of the entire data set is $P(observation_1, observation_2, ..., observation_n|p_1, p_2) =$ $P(observation_1|p_1, p_2) \cdot P(observation_2|p_1, p_2)\cdot ... \cdot P(observation_n|p_1,p_2)$
+- For now, we can use it to compute the probability of the observed data for a specific set of parameters ...
+- And next week, we'll exploit this knowledge to figure out $p_1$ and $p_1$, or something equivalent ...

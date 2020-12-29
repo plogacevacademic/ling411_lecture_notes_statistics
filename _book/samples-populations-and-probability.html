@@ -24,7 +24,7 @@
 <meta name="author" content="Pavel Logacev" />
 
 
-<meta name="date" content="2020-12-28" />
+<meta name="date" content="2020-12-29" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -217,6 +217,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <li class="chapter" data-level="7.4.1" data-path="samples-populations-and-probability.html"><a href="samples-populations-and-probability.html#examples-of-probabilistic-statments"><i class="fa fa-check"></i><b>7.4.1</b> Examples of Probabilistic Statments</a></li>
 <li class="chapter" data-level="7.4.2" data-path="samples-populations-and-probability.html"><a href="samples-populations-and-probability.html#the-notion-of-probability"><i class="fa fa-check"></i><b>7.4.2</b> The Notion of Probability</a></li>
 <li class="chapter" data-level="7.4.3" data-path="samples-populations-and-probability.html"><a href="samples-populations-and-probability.html#the-laws-of-probability"><i class="fa fa-check"></i><b>7.4.3</b> The Laws of Probability</a></li>
+<li class="chapter" data-level="7.4.4" data-path="samples-populations-and-probability.html"><a href="samples-populations-and-probability.html#a-first-statistical-model"><i class="fa fa-check"></i><b>7.4.4</b> A First Statistical Model</a></li>
 </ul></li>
 </ul></li>
 <li class="divider"></li>
@@ -414,32 +415,75 @@ Probabilities of events which depend on each other, are also dependent.
 <li><p>Whatever interpretation we assign probabilities, they must follow certain laws in order to be useful. It could be argued that the laws essentially to encode common sense applied to numbers.</p>
 <ol style="list-style-type: decimal">
 <li><p>For any event A, the probability of A, written as P(A), is a number between 0 and 1.</p></li>
-<li><p>The probabilities of <em>all possible events</em> must sum to to 1. (<strong>Law of total probability</strong>)</p></li>
-<li><p>The probabilities of an event occuring and an event not occuring must sum 1. (<strong>Law of complements</strong>)</p></li>
+<li><p><strong>Law of total probability:</strong> The probabilities of <em>all possible events</em> must sum to to 1.</p></li>
+<li><p><strong>Law of complements:</strong> The probabilities of an event occuring and an event not occuring must sum 1.</p></li>
 </ol></li>
 </ul>
-<div id="mutually-exclusive-events" class="section level4">
-<h4><span class="header-section-number">7.4.3.1</span> Mutually exclusive events</h4>
-<ul>
-<li><p><strong>Mutually exclusive events</strong>: Events that cannot happen at the same time. For example, a 6-sided die <strong>coming up with an even number</strong> (<span class="math inline">\(A_1\)</span>) and <strong>coming up ‘3’</strong> (<span class="math inline">\(A_2\)</span>). (<em>Please note: events are not complementary, but mutually exclusive.</em>)</p></li>
-<li><p>For two events <span class="math inline">\(A_1, A_2\)</span> which are mutually exclusive, the probability that one of the events occurs (<span class="math inline">\(P(A_1~or~A_2)\)</span>) is the sum of their probabilities <span class="math inline">\(P(A_1) + P(A_2)\)</span>.</p></li>
-<li><p>For two events <span class="math inline">\(A_1, A_2\)</span> which are <em>not</em> mutually exclusive, the probability that one of the events occurs (<span class="math inline">\(P(A_1~or~A_2)\)</span>) is <span class="math inline">\(P(A_1) + P(A_2) - P(A_1~and~A_2)\)</span>. (<strong>Additive law of probability</strong>)</p></li>
-</ul>
+<div id="examples-2" class="section level4">
+<h4><span class="header-section-number">7.4.3.1</span> Examples</h4>
+<ol style="list-style-type: decimal">
+<li><p>…</p></li>
+<li><p>…</p></li>
+<li><p>…</p></li>
+</ol>
 </div>
 <div id="independent-events" class="section level4">
 <h4><span class="header-section-number">7.4.3.2</span> Independent events</h4>
 <ul>
-<li><p><strong>Independent events</strong>: Events for which the probability of the occurrence of one of them (say, <span class="math inline">\(A_1\)</span>) does <em>not depend</em> on whether or not the other one (say, <span class="math inline">\(A_2\)</span>) has occurred or will occur.</p></li>
-<li><p>For two independent events <span class="math inline">\(A_1, A_2\)</span>, the probability of both events occurring (<strong>the joint probability of <span class="math inline">\(A_1\)</span> and <span class="math inline">\(A_2\)</span></strong> <span class="math inline">\(P(A_1~and~A_2)\)</span> or <span class="math inline">\(P(A_1, A_2)\)</span>) is the product of their probabilities: <span class="math inline">\(P(A_1) \cdot P(A_2)\)</span>.</p></li>
+<li><strong>Independent events</strong>:
+<ul>
+<li>Events for which the probability of the occurrence of one of them (<span class="math inline">\(A_1\)</span>) does <em>not depend</em> on whether or not the other one (<span class="math inline">\(A_2\)</span>) has occurred or will occur.</li>
+</ul></li>
+<li>For two independent events <span class="math inline">\(A_1\)</span> and <span class="math inline">\(A_2\)</span>, the probability of both events occurring (<strong>the joint probability of <span class="math inline">\(A_1\)</span> and <span class="math inline">\(A_2\)</span></strong>) is the product of their probabilities:
+<span class="math display">\[P(A_1, A_2) = P(A_1) \cdot P(A_2)\]</span></li>
+</ul>
+</div>
+<div id="examples-3" class="section level4">
+<h4><span class="header-section-number">7.4.3.3</span> Examples</h4>
+<ul>
+<li>A fair coin coming first heads, then tails.</li>
+<li>Rain in Istanbul, and Rain in Sydney</li>
+<li>… can you think of other examples?</li>
+</ul>
+</div>
+<div id="mutually-exclusive-events" class="section level4">
+<h4><span class="header-section-number">7.4.3.4</span> Mutually exclusive events</h4>
+<ul>
+<li><strong>Mutually exclusive events</strong>: Events that cannot happen at the same time.
+<ul>
+<li>Can be a logical contradiction, like a 6-sided die <strong>coming up with an even number</strong> (<span class="math inline">\(A_1\)</span>) and <strong>coming up ‘3’</strong> (<span class="math inline">\(A_2\)</span>).</li>
+<li>Events can also be mutually exclusive without being a <em>logical contradiction</em>: For example, reporting feeling happy and sad at the same time. (But mutually exclusive events will always be in contradiction <em>vis á vis</em> the system that generates the events.)</li>
+</ul></li>
+<li><strong>Additive law of probability:</strong> For two <em>any</em> events <span class="math inline">\(A_1, A_2\)</span>, the probability that one of the events occurs is:</li>
+</ul>
+<p><span class="math display">\[P(A_1~or~A_2) = P(A_1) + P(A_2) - P(A_1~and~A_2)\]</span></p>
+<ul>
+<li><strong>Special case:</strong> For two <em>mutually exclusive</em> events <span class="math inline">\(A_1, A_2\)</span> the probability that one of the events occurs is the sum of their probabilities:
+<span class="math display">\[P(A_1~or~A_2) = P(A_1) + P(A_2)\]</span></li>
+</ul>
+</div>
+<div id="examples-4" class="section level4">
+<h4><span class="header-section-number">7.4.3.5</span> Examples</h4>
+<ul>
+<li>A coin coming up heads and tails at the same time.</li>
+<li>Heavy rain in Istanbul for more than a day, and no flooding in Istanbul</li>
+<li>… can you think of other examples?</li>
 </ul>
 </div>
 <div id="conditional-probability" class="section level4">
-<h4><span class="header-section-number">7.4.3.3</span> Conditional probability</h4>
+<h4><span class="header-section-number">7.4.3.6</span> Conditional probability</h4>
 <ul>
 <li><p><strong>Conditional probability</strong>: The conditional probability of event <span class="math inline">\(A_1\)</span> given event <span class="math inline">\(A_2\)</span> is the probability that event <span class="math inline">\(A_1\)</span> will occur (or has occured), given that <span class="math inline">\(A_2\)</span> has occured (or will occur).</p></li>
-<li><p>For two events, the conditional probability <span class="math inline">\(P(A_1|A_2)\)</span> is <span class="math inline">\(P(A_1,A_2) / P(A_2)\)</span>.</p></li>
-<li><p>For two independent events, the conditional probability <span class="math inline">\(P(A_1|A_2)\)</span> is just <span class="math inline">\(P(A_1)\)</span>.</p></li>
-<li><p>For mutually exclusive events, the conditional probability <span class="math inline">\(P(A_1|A_2)\)</span> is <span class="math inline">\(0\)</span>.</p></li>
+<li><p><strong>Definition of conditional probability:</strong> For two events, the conditional probability <span class="math inline">\(P(A_1|A_2)\)</span> is <span class="math inline">\(P(A_1,A_2) / P(A_2)\)</span>.</p></li>
+<li><p><strong>Special case 1:</strong> For two independent events, the conditional probability <span class="math inline">\(P(A_1|A_2) = P(A_1)\)</span>.</p></li>
+<li><p><strong>Special case 2:</strong> For mutually exclusive events, the conditional probability <span class="math inline">\(P(A_1|A_2) = 0\)</span>.</p></li>
+</ul>
+</div>
+<div id="examples-5" class="section level4">
+<h4><span class="header-section-number">7.4.3.7</span> Examples</h4>
+<ul>
+<li>The probability of having a disease given that a test says so</li>
+<li>The probability of a test saying that you have a disease given that you do</li>
 </ul>
 <!--
 to-do:
@@ -460,8 +504,55 @@ to-do:
 <!--
 - **Odds**: Probabilites can also be represented as the odds of something happening, where odds of of 4:3 mean that the event has a probability of $4/(4+3)$.
 -->
-
 </div>
+</div>
+<div id="a-first-statistical-model" class="section level3">
+<h3><span class="header-section-number">7.4.4</span> A First Statistical Model</h3>
+<p><em>(This will be a somewhat clumsy model, and we’ll develop a better one later.)</em></p>
+<ul>
+<li>The main aim of a generative model is to describe how the data we observed is generated.</li>
+<li>Let’s create a simple model of observed word order, with the following assumptions</li>
+</ul>
+<p><img src="img/treemodel1b.jpg" alt="A schematic of a first model." />
+- It follows from this model that the following observations have the following probabilities:</p>
+<table>
+<thead>
+<tr class="header">
+<th align="left">recipient</th>
+<th align="left">default word order?</th>
+<th align="left">probability</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">animate</td>
+<td align="left"><span class="math inline">\(1\)</span></td>
+<td align="left"><span class="math inline">\(p_1\)</span></td>
+</tr>
+<tr class="even">
+<td align="left">animate</td>
+<td align="left"><span class="math inline">\(0\)</span></td>
+<td align="left"><span class="math inline">\(1-p_1\)</span></td>
+</tr>
+<tr class="odd">
+<td align="left">inanimate</td>
+<td align="left"><span class="math inline">\(1\)</span></td>
+<td align="left"><span class="math inline">\(p_2\)</span></td>
+</tr>
+<tr class="even">
+<td align="left">inanimate</td>
+<td align="left"><span class="math inline">\(0\)</span></td>
+<td align="left"><span class="math inline">\(1-p_2\)</span></td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>Doesn’t this mean that we could even compute the is the probability of the data, if we only knew <span class="math inline">\(p_1\)</span>, and <span class="math inline">\(p_2\)</span>? Absolutely!</li>
+<li>The probability of the entire data set is <span class="math inline">\(P(observation_1, observation_2, ..., observation_n|p_1, p_2) =\)</span> <span class="math inline">\(P(observation_1|p_1, p_2) \cdot P(observation_2|p_1, p_2)\cdot ... \cdot P(observation_n|p_1,p_2)\)</span></li>
+<li>For now, we can use it to compute the probability of the observed data for a specific set of parameters …</li>
+<li>And next week, we’ll exploit this knowledge to figure out <span class="math inline">\(p_1\)</span> and <span class="math inline">\(p_1\)</span>, or something equivalent …</li>
+</ul>
+
 </div>
 </div>
 </div>
