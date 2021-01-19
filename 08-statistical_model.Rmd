@@ -13,7 +13,6 @@ set.seed(123)
 is_interactive <- FALSE
 ```
 
-
 ```{r echo=FALSE, results='hide', message=FALSE, echo = F}
 
 library(dplyr)
