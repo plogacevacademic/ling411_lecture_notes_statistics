@@ -1,0 +1,206 @@
+---
+output:
+  pdf_document: default
+html_document: default
+editor_options: 
+  chunk_output_type: console
+---
+  
+  ```{r include=FALSE}
+knitr::opts_chunk$set(echo = T)
+set.seed(123)
+
+is_interactive <- FALSE
+```
+
+```{r echo=FALSE, results='hide', message=FALSE, echo = F}
+
+library(dplyr)
+library(magrittr)
+library(tidyr)
+library("scatterplot3d")
+library(magrittr)
+library(languageR)
+library(ggplot2)
+theme_set(theme_bw())
+options(dplyr.summarise.inform = FALSE)
+library(ggpubr)
+
+
+library(rgl)
+library(knitr)
+knit_hooks$set(webgl = hook_webgl)
+
+```
+
+# Case Studies
+
+
+## VOT Data
+
+- Data on voicing in English and Korean.
+
+### Loading the Data
+```{r echo=T, messages=FALSE}
+# read English data and keep only relevant columns
+vot_engl <- readxl::read_excel("./data/VOT/english.xlsx", sheet = 1) %>%
+              dplyr::select(subject, gender, Item, WorldBet, TargetConsonant, TargetVowel, msVOT) %>%
+              subset(TargetConsonant %in% c("d","g","th","kh"))
+
+
+# take a look
+head(vot_engl)
+
+# which consonants are we dealing with, anyway
+unique(vot_engl$TargetConsonant)
+
+# Worldbet documentation in the appendix:
+# http://www.cs.toronto.edu/~frank/csc401/readings/worldbet.pdf
+```
+
+```{r echo=T, messages=FALSE}
+# read Korean data and keep only relevant columns
+vot_kor <- readr::read_tsv("./data/VOT/songyuan.txt") %>%
+              dplyr::select(subject, gender, Item, WorldBet, TargetConsonant, TargetVowel, msVOT)
+
+# take a look
+head(vot_kor)
+
+# which consonants are we dealing with, anyway
+unique(vot_kor$TargetConsonant)
+```
+
+```{r echo=T, messages=FALSE}
+
+typeof(vot_engl$msVOT)
+
+# let's see if all msVOT are convertible to doubles:
+subset(vot_engl, is.na(as.double(msVOT)))
+
+# convert msVOT to a double
+vot_engl$msVOT %<>% as.double()
+vot_kor$msVOT %<>% as.double()
+
+
+vot_engl$language <- "English"
+vot_kor$language <- "Korean"
+vot <- dplyr::bind_rows(vot_engl, vot_kor)
+```
+
+
+### Explorotary Data Analysis and Descriptive Statistics
+
+- Let's try to understand our data better.
+
+#### Averages
+- Let's look a the average VOTs.
+```{r echo=T, messages=FALSE}
+vot_avg <- vot %>% group_by(language, TargetConsonant) %>% dplyr::summarise(avg_VOT = mean(msVOT, na.rm=T)) 
+vot_avg %>% ggplot(aes(TargetConsonant, avg_VOT)) + geom_bar(stat = "identity")+ facet_wrap(~language)
+```
+
+#### Histograms
+- Because we have relatively few target sounds, and relatively many data points per sound, we can take a look at histograms by sound.  
+```{r echo=T, messages=FALSE}
+ggplot(vot, aes(msVOT)) + geom_histogram() + facet_wrap(language~TargetConsonant, scales = "free")
+```
+
+#### Boxplots
+- Let's look at them side-by-side, using *'box-(and whiskers)-plots'*. Boxplots provide a *five-number summary* of a distribution: 
+  * The median, the 1st quartile (25th percentile), and the 3rd quartile (75th percentile) make up the box part.
+  * The upper whisker extends from the third quartile to the largest observed value no larger than $1.5\cdot IQR$ from it.
+  * The upper whisker extends from the first quartile to the smallerst observed value no smaller than $1.5\cdot IQR$ from it.
+  
+```{r echo=T, messages=FALSE}
+ggplot(vot, aes(TargetConsonant, msVOT)) + geom_boxplot() + facet_wrap(~language, scales = "free_x")
+```
+
+#### Summary
+- Voiced stops clearly differ from voiceless stops in VOT. (*What a surprise! :)*)
+- A lot of variation in the English dataset.
+- Lower *average* VOTs in English. Picture is a bit more fuzzy for the median.
+
+
+### How long is the difference between voiced and unvoiced stops in English and in Korean? 
+
+- Now is the time to fit a linear model to estimate the differences between mean VOTs. 
+- Let's first create the right contrasts.
+
+```{r echo=T, messages=FALSE}
+# let's set up the right contrasts
+unique(vot$TargetConsonant)
+df_contrasts <- data.frame(TargetConsonant = c("d", "g", "th", "kh", "t", "k"),
+                           is_voiced       = c(1,    1,     0,    0,   0,   0),
+                           is_velar        = c(0,    1,     0,    1,   0,   1) 
+                           )
+
+# Create centered contrasts from dummy contrasts. That way, we'll be free to use whichever ones we like further down.
+df_contrasts$c_is_voiced <- df_contrasts$is_voiced - 0.5
+df_contrasts$c_is_velar <- df_contrasts$is_velar - 0.5
+
+# merge the contrasts into the current data frame
+# see cheat sheet for left_join: https://rstudio.com/wp-content/uploads/2015/02/data-wrangling-cheatsheet.pdf
+vot %<>% dplyr::left_join(df_contrasts)
+
+# code the language too
+vot$is_english <- vot$language %>% dplyr::recode("English"=1, "Korean"=0)
+vot$c_is_english <- vot$is_english
+```
+
+- Let's start step-by-step and look at a range of models. In your term paper you will only need to present the one which is the most relevant.
+
+```{r echo=T, messages=FALSE}
+
+library(brms)
+
+vot_english <- vot %>% subset(language == "English")
+
+# An intercept-only model. We use it to check that all packages are properly installed
+m1 <- brm(msVOT ~ 1, 
+          family = gaussian(),
+          data = vot_english %>% subset(!is.na(msVOT)), 
+          file = "./models/vot_m1", cores = 4)
+
+summary(m1)
+```
+
+- Let's look at model `m1` in more detail. Here is what that `brm` call does:
+  * It says, *let's assume that all our observations are from a normal distribution with mean $\mu$ and standard deviation $\sigma$*, and that *\mu = a* (the intercept).
+  * *Assuming that this model is correct*, what can we say about the *posterior distribution of the parameters $a$ and $\sigma$ given the data?*
+  * Well, it seems that we can say that with 95% probability $a$ is in the interval $[38; 44.5]$, and $\sigma$ $[51; 56]$. 
+
+```{r echo=T, messages=FALSE}
+# A model with voicing as a predictor. What do the coefs mean?
+m2a <- brm(msVOT ~ 1 + is_voiced, 
+          family = gaussian(),
+          data = vot_english %>% subset(!is.na(msVOT)), 
+          file = "./models/vot_m2a", cores = 4)
+summary(m2a)
+```
+
+```{r echo=T, messages=FALSE}
+# A model with voicing as a predictor. What do the coefs mean?
+m2b <- brm(msVOT ~ 1 + c_is_voiced, 
+          family = gaussian(),
+          data = vot_english %>% subset(!is.na(msVOT)), 
+          file = "./models/vot_m2b", cores = 4)
+summary(m2b)
+```
+
+- As you see, the slopes for voicing are the same, but the intercepts change if we change the predictor from dummy coding to a centered predictor.
+
+
+- Let's look a the language too:
+```{r echo=T, messages=FALSE}
+# A model with voicing and language as predictors. What do the coefs mean?
+m3 <- brm(msVOT ~ 1 + c_is_english + is_voiced + c_is_english:is_voiced, 
+          family = gaussian(),
+          data = vot %>% subset(!is.na(msVOT)), 
+          file = "./models/vot_m3", cores = 4)
+summary(m3)
+```
+
+... And what happens if we remove all implausibly low VOT values? ... 
+
+### Conclusion
+... Let's write it together ...
