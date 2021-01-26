@@ -165,7 +165,7 @@ summary(m1)
 ```
 
 - Let's look at model `m1` in more detail. Here is what that `brm` call does:
-  * It says, *let's assume that all our observations are from a normal distribution with mean $\mu$ and standard deviation $\sigma$*, and that *\mu = a* (the intercept).
+  * It says, *let's assume that all our observations are from a normal distribution with mean $\mu$ and standard deviation $\sigma$*, and that *$\mu$ = a* (the intercept).
   * *Assuming that this model is correct*, what can we say about the *posterior distribution of the parameters $a$ and $\sigma$ given the data?*
   * Well, it seems that we can say that with 95% probability $a$ is in the interval $[38; 44.5]$, and $\sigma$ $[51; 56]$. 
 
@@ -193,14 +193,98 @@ summary(m2b)
 - Let's look a the language too:
 ```{r echo=T, messages=FALSE}
 # A model with voicing and language as predictors. What do the coefs mean?
-m3 <- brm(msVOT ~ 1 + c_is_english + is_voiced + c_is_english:is_voiced, 
+m3 <- brm(msVOT ~ 1 + c_is_english + c_is_voiced + c_is_english:c_is_voiced, 
           family = gaussian(),
           data = vot %>% subset(!is.na(msVOT)), 
           file = "./models/vot_m3", cores = 4)
 summary(m3)
 ```
 
-... And what happens if we remove all implausibly low VOT values? ... 
+- The average effect of language on VOT (for both, voiced and voiceless consonants), is $[-22; -15]$. 
+- The average effect of voicing on VOT (across languages), is $[-72; -60]$.
+- The interaction between language and voicing for VOT (the difference in the effect of voicing between languages), is $[-22; -8]$.
 
+
+
+- Here is what happens if we remove all those odd VOT values. (They are all smaller than 0.) But can we even interpret the result if we selectively exclude data?
+```{r echo=T, messages=FALSE}
+# A model with voicing and language as predictors. What do the coefs mean?
+m3b <- brm(msVOT ~ 1 + c_is_english + c_is_voiced + c_is_english:c_is_voiced, 
+          family = gaussian(),
+          data = vot %>% subset(!is.na(msVOT)) %>% subset(msVOT >= 0),
+          cores = 4)
+summary(m3b) 
+```
+
+- Certainly, some values should be excluded. For example, $-150\,ms$ seems like an absurdly low VOT value. But all of them? How about $-30\,ms$. This is where *domain knowledge* is required (which I don't have).  
+
+<!--
 ### Conclusion
-... Let's write it together ...
+...
+-->
+
+## Priming Experiment
+
+```{r echo=T, messages=FALSE}
+# Load the 'primingHeid' dataset
+library(languageR)
+
+priming_data <- languageR::primingHeid %>% dplyr::select(subject=Subject, word=Word, condition=Condition, RT=RT, response_correct=ResponseToPrime)
+priming_data$RT %<>% exp()
+priming_data$condition %<>% dplyr::recode("heid"="related", "baseheid"="unrelated")
+head(priming_data)
+
+```
+```{r echo=T, messages=FALSE}
+
+priming_data %>% ggplot(aes(condition, RT)) + geom_boxplot()
+```
+```{r echo=T, messages=FALSE}
+
+priming_data %>% group_by(condition) %>% dplyr::summarise(accuracy = mean(response_correct == "correct"))
+```
+```{r echo=T, messages=FALSE}
+
+priming_correct <- priming_data %>% subset(response_correct == "correct")
+
+priming_correct %>% ggplot(aes(condition, RT)) + geom_boxplot()
+```
+
+```{r echo=T, messages=FALSE}
+priming_correct %>% group_by(condition) %>% dplyr::summarise(mean_RT = mean(RT))
+```
+
+```{r echo=T, messages=FALSE}
+library(brms)
+
+priming_correct$c_is_related <- priming_correct$condition %>% dplyr::recode("unrelated"=-.5, "related"=.5)
+
+priming_m1 <- brm(RT ~ c_is_related, data = priming_correct, file = "./models/priming_m1")
+summary(priming_m1)
+```
+
+
+
+# Your term paper
+
+- Approximately 3-6 pages
+- Three sections: Method, Results, Conclusion
+- Analysis code in a separate R file
+- Method:
+  * What was the question we wanted to answer? (Imagine that you don't know anything about previous priming studies.)
+  * Stimuli: 
+    * What kind of words did we select? 
+    * How were they selected? 
+    * How was one condition different from the other? 
+    * What were the fillers like?
+    * How many of which kind did participants see?
+  * Procedure: 
+    * What did a single trial look like? 
+- Results:
+  * Descriptive statistics
+  * Inferential statics (brms model; contact me or Utku if you have trouble in setting up brms -- we can run the model for you if all else fails)
+- Conclusion?
+  * Do we have evidence for priming?
+  * (Could we have done anything better?)
+  
+  
