@@ -266,7 +266,14 @@ summary(priming_m1)
 
 
 # Your term paper
-
+- Please download the data from moodle: 'Priming experiment data' (`data_priming.csv`)
+  - Columns:
+    * `subject_id`: The subject ID
+    * `condition`: One of `condition_related`, `condition_unrelated`, `filler` 
+    * `item`: Item ID
+    * `word`: The target word
+    * `RT`: The response time in milliseconds
+    * `response_yes`: $1$ if the response was 'is a word', and $0$ is the response was 'is not a word'
 - Approximately 3-6 pages
 - Three sections: Method, Results, Conclusion
 - Analysis code in a separate R file
