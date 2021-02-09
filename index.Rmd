@@ -21,7 +21,8 @@ description: " "
   - The pretty great introduction to R and statistics by Danielle Navarro available [here](https://learningstatisticswithr.com).
   - Matt Crump's ['Answering Questions with Data'](https://crumplab.github.io/statistics/).
   - Bodo Winter's *'Statistics of Linguists: An Introduction Using R'*
-  
+  - Michael Franke's ['An Introduction to Data Analysis'](https://michael-franke.github.io/intro-data-analysis/index.html).
+
 <!--
 This is a _sample_ book written in **Markdown**. You can use anything that Pandoc's Markdown supports, e.g., a math equation $a^2 + b^2 = c^2$.
 
