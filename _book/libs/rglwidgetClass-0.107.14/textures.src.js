@@ -1,4 +1,11 @@
-
+    /**
+     * Methods related to textures
+     * @name ___METHODS_FOR_TEXTURES___
+     * @memberof rglwidgetClass
+     * @kind function
+     * @instance
+     */
+     
     /**
      * Handle a texture after its image has been loaded
      * @param { Object } texture - the gl texture object
@@ -104,8 +111,10 @@
          ctx.font = fontStrings[i] = getFontString(i);
          width = widths[i] = ctx.measureText(text[i]).width;
          if (offsetx + width > maxTexSize) {
+           offsety = offsety + 2*textHeight;
+           if (line >= 0)
+             lineoffsetsy[line] = offsety;
            line += 1;
-           offsety = lineoffsetsy[line] = offsety + 2*textHeight;
            if (offsety > maxTexSize)
              console.error("Too many strings for texture.");
            textHeight = 0;

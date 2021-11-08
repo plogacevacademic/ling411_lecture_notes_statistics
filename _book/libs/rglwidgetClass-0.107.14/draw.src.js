@@ -1,4 +1,11 @@
-
+    /**
+     * Methods related to drawing
+     * @name ___METHODS_FOR_DRAWING___
+     * @memberof rglwidgetClass
+     * @kind function
+     * @instance
+     */
+     
     /**
      * Start drawing
      * @returns { boolean } Previous state
@@ -64,8 +71,8 @@
               for (i=0; i<nhits-2; i++) {
                 which = 0; /* initialize to suppress warning */
                 for (j=i+1; j<nhits; j++) {
-                  if (face1[i] == face1[j] || face1[i] == face2[j] ||
-                      face2[i] == face1[j] || face2[i] == face2[j] ) {
+                  if (face1[i] === face1[j] || face1[i] === face2[j] ||
+                      face2[i] === face1[j] || face2[i] === face2[j] ) {
                     which = j;
                     break;
                   }
@@ -110,7 +117,12 @@
                      triangles : "TRIANGLES",
                      sphere : "TRIANGLES"
     };
-
+    
+    /**
+     * Disable unused arrays
+     * @param { Object } obj - Object to work with
+     * @param { Array } enabled - Array indicating which are enabled
+     */
     rglwidgetClass.prototype.disableArrays = function(obj, enabled) {
       var gl = this.gl || this.initGL(),
           objLocs = ["normLoc", "texLoc", "ofsLoc", "pointLoc", "nextLoc"],
@@ -125,7 +137,10 @@
       	}
       }
     };
-    
+
+    /**
+     * Start drawing the scene
+     */    
     rglwidgetClass.prototype.doStartScene = function() {
       var gl = this.gl || this.initGL();
       gl.enable(gl.DEPTH_TEST);
@@ -133,12 +148,14 @@
       gl.clearDepth(1.0);
       gl.clearColor(1,1,1,1);
       gl.depthMask(true); // Must be true before clearing depth buffer
+      /* jshint bitwise: false */
       gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+      /* jshint bitwise: true */
     };
     
     /**
      * Set gl depth test based on object's material
-     * @param { object } obj - object to use
+     * @param { Object } obj - object to use
      */
     rglwidgetClass.prototype.doDepthTest = function(obj) {
       var gl = this.gl,
@@ -150,7 +167,7 @@
                    notequal: gl.NOTEQUAL,
                    gequal: gl.GEQUAL,
                    always: gl.ALWAYS},
-           test = tests[this.getObjMaterial(obj, "depth_test")];
+           test = tests[this.getMaterial(obj, "depth_test")];
       gl.depthFunc(test);
     };    
     
@@ -168,6 +185,11 @@
         gl.disable(gl.POLYGON_OFFSET_FILL);
     };
     
+    /**
+     * Do code for clipping
+     * @param { object } obj - Object to work with
+     * @param { object } subscene - Subscene to work with
+     */
     rglwidgetClass.prototype.doClipping = function(obj, subscene) {
       var gl = this.gl,
           clipcheck = 0,
@@ -185,6 +207,11 @@
           gl.uniform4f(obj.clipLoc[i], 0,0,0,0);
     };
     
+    /**
+     * Do code for lighting
+     * @param { object } obj - Object to work with
+     * @param { object } subscene - Subscene to work with
+     */
     rglwidgetClass.prototype.doLighting = function(obj, subscene) {
       var gl = this.gl, i, light;
         gl.uniformMatrix4fv( obj.normMatLoc, false, new Float32Array(this.normMatrix.getAsArray()) );
@@ -192,7 +219,7 @@
         gl.uniform1f( obj.shininessLoc, obj.shininess);
         for (i=0; i < subscene.lights.length; i++) {
           light = this.getObj(subscene.lights[i]);
-          if (!light.initialized) this.initObj(light.id);
+          if (!light.initialized) this.initObj(light);
           gl.uniform3fv( obj.ambientLoc[i], this.componentProduct(light.ambient, obj.ambient));
           gl.uniform3fv( obj.specularLoc[i], this.componentProduct(light.specular, obj.specular));
           gl.uniform3fv( obj.diffuseLoc[i], light.diffuse);
@@ -207,6 +234,10 @@
         }
     };
     
+    /**
+     * Do code for colors
+     * @param { object } obj - Object to work with
+     */
     rglwidgetClass.prototype.doColors = function(obj) {
       var gl = this.gl;
       if (obj.colorCount === 1) {
@@ -220,6 +251,10 @@
       }
     };
     
+    /**
+     * Do code for normals
+     * @param { object } obj - Object to work with
+     */
     rglwidgetClass.prototype.doNormals = function(obj) {
       var gl = this.gl;
       if (obj.vOffsets.nofs >= 0) {
@@ -230,6 +265,10 @@
         return false;
     };
     
+    /**
+     * Do code for textures
+     * @param { object } obj - Object to work with
+     */    
     rglwidgetClass.prototype.doTexture = function(obj) {
       var gl = this.gl, 
           is_spheres = obj.type === "spheres";
@@ -244,6 +283,10 @@
         return true;
     };
     
+    /**
+     * Do code for user attributes
+     * @param { object } obj - Object to work with
+     */    
     rglwidgetClass.prototype.doUserAttributes = function(obj) {
       if (typeof obj.userAttributes !== "undefined") {
         var gl = this.gl;
@@ -254,7 +297,11 @@
       	}
       }
     };
-    
+
+    /**
+     * Do code for user uniforms
+     * @param { object } obj - Object to work with
+     */    
     rglwidgetClass.prototype.doUserUniforms = function(obj) {
       if (typeof obj.userUniforms !== "undefined") {
         var gl = this.gl;
@@ -272,7 +319,7 @@
       	      	case 4: gl.uniform4fv(loc, uniform); break;
       	      	default: console.warn("bad uniform length");
       	      }
-      	    } else if (uniform.length == 4 && uniform[0].length == 4)
+      	    } else if (uniform.length === 4 && uniform[0].length === 4)
       	      gl.uniformMatrix4fv(loc, false, new Float32Array(uniform.getAsArray()));
       	    else
       	      console.warn("unsupported uniform matrix");
@@ -280,12 +327,18 @@
       	}
       }
     };
-    
+
+    /**
+     * Load indices for complex drawing
+     * @param { object } obj - Object to work with
+     * @param { numeric } pass - Which pass of drawing?
+     * @param { array } indices - Indices to draw
+     */    
     rglwidgetClass.prototype.doLoadIndices = function(obj, pass, indices) {
       var gl = this.gl,
           f = obj.f[pass],
           type = obj.type,
-          fat_lines = obj.flags & this.f_fat_lines,
+          fat_lines = this.isSet(obj.flags, this.f_fat_lines),
           fnew, step;
       switch(type){
         case "points":
@@ -332,11 +385,19 @@
       return fnew.length;
     };
 
+    /**
+     * Do code for depth masking
+     * @param { boolean } mask - whether to mask
+     */
     rglwidgetClass.prototype.doMasking = function(mask) {
       var gl = this.gl;
       gl.depthMask(mask);
     };
-    
+
+    /**
+     * Do code for alpha blending
+     * @param { boolean }  blend - Whether to blend.
+     */    
     rglwidgetClass.prototype.doBlending = function(blend) {
       var gl = this.gl;
       if (blend) {
@@ -350,7 +411,8 @@
     
     /**
      * Set up for fog in the subscene
-     * @param { number } id - id of background object
+     * @param { object } obj - background object
+     * @param { object } subscene - which subscene
      */
     rglwidgetClass.prototype.doFog = function(obj, subscene) {
       var gl = this.gl, fogmode, color, 
@@ -391,40 +453,46 @@
        When this.opaquePass is false, the context argument
        contains a "piece", i.e. an ordered list of parts
        of the object to draw. */
-       
+
+    /**
+     * Draw simple object
+     * @param { object } obj - Object to draw
+     * @param { object } subscene - which subscene
+     * @param { array } context - Which context are we in?
+     */       
     rglwidgetClass.prototype.drawSimple = function(obj, subscene, context) {
       var 
           flags = obj.flags,
           type = obj.type,
-          is_lit = flags & this.f_is_lit,
-          has_texture = flags & this.f_has_texture,
-          is_transparent = flags & this.f_is_transparent,
-          fixed_size = flags & this.f_fixed_size,
-          fixed_quads = flags & this.f_fixed_quads,
-          is_lines = flags & this.f_is_lines,
-          fat_lines = flags & this.f_fat_lines,
-          is_twosided = (flags & this.f_is_twosided) > 0,
-          has_fog = flags & this.f_has_fog,
+          is_lit = this.isSet(flags, this.f_is_lit),
+          has_texture = this.isSet(flags, this.f_has_texture),
+          is_transparent = this.isSet(flags, this.f_is_transparent),
+          fixed_size = this.isSet(flags, this.f_fixed_size),
+          fixed_quads = this.isSet(flags, this.f_fixed_quads),
+          is_lines = this.isSet(flags, this.f_is_lines),
+          fat_lines = this.isSet(flags, this.f_fat_lines),
+          is_twosided = this.isSet(flags, this.f_is_twosided),
+          has_fog = this.isSet(flags, this.f_has_fog),
           gl = this.gl || this.initGL(),
           count,
           pass, mode, pmode,
           enabled = {};
-
+        
       if (!obj.initialized)
-        this.initObj(obj.id);
+        this.initObj(obj);
 
       count = obj.vertexCount;
       if (!count)
         return [];
     
-      is_transparent |= obj.someHidden;
+      is_transparent = is_transparent || obj.someHidden;
       
       if (is_transparent && this.opaquePass)
         return this.getPieces(context, obj.id, 0, obj);
 
       this.doDepthTest(obj);
       
-      this.doMasking(this.getObjMaterial(obj, "depth_mask"));
+      this.doMasking(this.getMaterial(obj, "depth_mask"));
             
       gl.useProgram(obj.prog);
 
@@ -472,15 +540,18 @@
         if (pmode === "culled")
           continue;
 
-      	mode = fat_lines && (is_lines || pmode == "lines") ? "TRIANGLES" : this.mode4type[type];
+      	mode = fat_lines && (is_lines || pmode === "lines") ? "TRIANGLES" : this.mode4type[type];
 
       	if (is_twosided)
       	  gl.uniform1i(obj.frontLoc, pass !== 0);
 
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, obj.ibuf[pass]);
-        if (!this.opaquePass && !(type === "sphere" && obj.fastTransparency))
-          count = this.doLoadIndices(obj, pass, context.indices);
-        else {
+        if (!this.opaquePass) {
+          if (type === "sphere" && obj.fastTransparency)
+            count = this.doLoadIndices(obj, pass, this.sphere.fastpieces[0].indices);
+          else
+            count = this.doLoadIndices(obj, pass, context.indices);
+        } else {
           count = obj.f[pass].length;
           gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, obj.f[pass], gl.STATIC_DRAW);
         }
@@ -498,7 +569,7 @@
           enabled.nextLoc = true;
           gl.vertexAttribPointer(obj.nextLoc, 3, gl.FLOAT, false, 4*obj.vOffsets.stride, 4*obj.vOffsets.nextofs);
           gl.uniform1f(obj.aspectLoc, this.vp.width/this.vp.height);
-          gl.uniform1f(obj.lwdLoc, this.getMaterial(obj.id, "lwd")/this.vp.height);
+          gl.uniform1f(obj.lwdLoc, this.getMaterial(obj, "lwd")/this.vp.height);
         }
 
         gl.vertexAttribPointer(this.posLoc,  3, gl.FLOAT, false, 4*obj.vOffsets.stride,  4*obj.vOffsets.vofs);
@@ -508,7 +579,13 @@
       this.disableArrays(obj, enabled);
       return [];
     };
-   
+
+    /**
+     * Draw planes object
+     * @param { object } obj - Object to draw
+     * @param { object } subscene - which subscene
+     * @param { array } context - Which context are we in?
+     */      
     rglwidgetClass.prototype.drawPlanes = function(obj, subscene, context) {
       if (obj.bbox !== subscene.par3d.bbox || !obj.initialized) {
           this.planeUpdateTriangles(obj, subscene.par3d.bbox);
@@ -517,68 +594,95 @@
    };
 
     /**
-     * Draw spheres in a subscene
      * @param { object } obj - object to draw
      * @param { object } subscene 
-     * @param { object } context 
-     */
+     * @param { array } context 
+     * @description
+     * Draw spheres in a subscene<br>
+     * 
+     * Drawing spheres happens in six ways:<br>
+     * 1 opaquepass, not transparent:  transform and draw this.sphere count times<br>
+     * 2 opaquepass, transparent, not fast: transform & collect sphere pieces count times<br>
+     * 3 opaquepass, transparent, fast:  order the centres into separate pieces, order this.sphere once<br>
+     * 4 not opaquepass, not transparent:  do nothing<br>
+     * 5 not opaquepass, transparent, not fast:  transform for one sphere, draw one merged piece<br>
+     * 6 not opaquepass, transparent, fast:  transform for one sphere, draw this.sphere in fixed order.<br>
+     **/
+
     rglwidgetClass.prototype.drawSpheres = function(obj, subscene, context) {
       var flags = obj.flags,
-          is_transparent = flags & this.f_is_transparent,
+          is_transparent = this.isSet(flags, this.f_is_transparent),
           sphereMV, baseofs, ofs, sscale, i,
           count, nc, scount, scale, indices, sphereNorm,
-          enabled = {}, drawing, wholeSphere, 
+          enabled = {}, drawing,
           saveNorm = new CanvasMatrix4(this.normMatrix),
           saveMV = new CanvasMatrix4(this.mvMatrix),
-          result = [];
+          savePRMV = null,
+          result = [], idx, margin = obj.material.margin;
+ 
+      if (typeof margin !== "undefined")
+        if (!this.marginVecToDataVec(obj, subscene))
+          return [];
 
       if (!obj.initialized)
-        this.initObj(obj.id);
+        this.initObj(obj);
 
       count = obj.vertexCount;
-      if (!count)
-        return result;
+      if (!count) 
+        return [];
         
-      is_transparent |= obj.someHidden;
+      is_transparent = is_transparent || obj.someHidden;
 
+      if (!this.opaquePass && !is_transparent)
+        return [];
+        
+      if (this.prmvMatrix !== null)
+        savePRMV = new CanvasMatrix4(this.prmvMatrix);
+      
       scale = subscene.par3d.scale;        
       sphereNorm = new CanvasMatrix4();
       sphereNorm.scale(scale[0], scale[1], scale[2]);
       sphereNorm.multRight(saveNorm);
       this.normMatrix = sphereNorm;
 
-      if (this.opaquePass && !obj.fastTransparency) {
+      if (this.opaquePass) {
         context = context.slice();
         context.push(obj.id);
       } 
       
-      drawing = this.opaquePass ^ (is_transparent !== 0);
+      drawing = this.opaquePass !== is_transparent;
       if (drawing) {
         nc = obj.colorCount;
-        if (nc == 1) {
+        if (nc === 1) {
           this.sphere.onecolor = obj.onecolor;
         }
       }
       
-      this.initSphereFromObj(obj);
-                
-      scount = count;
-      indices = context.indices;
-      wholeSphere = this.opaquePass || context.subid < 0;
-      if (!wholeSphere)
-        scount = 1;
-      else if (!this.opaquePass)
-        scount = indices.length;
-        
+      this.initShapeFromObj(this.sphere, obj);
+
+      if (!this.opaquePass && obj.fastTransparency && typeof this.sphere.fastpieces === "undefined") {
+        this.sphere.fastpieces = this.getPieces(context.context, obj.id, 0, this.sphere);
+        this.sphere.fastpieces = this.sortPieces(this.sphere.fastpieces);
+        this.sphere.fastpieces = this.mergePieces(this.sphere.fastpieces);
+      }
+
+      if (this.opaquePass)
+        scount = count;
+      else {
+        indices = context.indices;
+        if (obj.fastTransparency)
+          scount = indices.length;  /* Each item gives the center of a whole sphere */
+        else
+          scount = 1;               /* Each item is a fragment of the sphere, at location subid */
+      }
       for (i = 0; i < scount; i++) {
         sphereMV = new CanvasMatrix4();
-        if (!wholeSphere) {
-          idx = context.subid;
-        } else if (this.opaquePass) {
+        if (this.opaquePass)
           idx = i;
-        } else {
+        else if (obj.fastTransparency)
           idx = indices[i];
-        }
+        else
+          idx = context.subid;
         if (typeof idx === "undefined")
           console.error("idx is undefined");
         baseofs = idx*obj.vOffsets.stride;
@@ -590,19 +694,21 @@
                              obj.values[baseofs+1],
                              obj.values[baseofs+2]);
         sphereMV.multRight(saveMV);
+        this.mvMatrix = sphereMV;
+        this.setprmvMatrix();
         if (drawing) {
-          this.mvMatrix = sphereMV;
           if (nc > 1) {
-            this.sphere.onecolor = this.flatten(obj.sphereColors[idx % obj.sphereColors.length]);
+            this.sphere.onecolor = obj.values.slice(baseofs + obj.vOffsets.cofs, baseofs + obj.vOffsets.cofs + 4);
           }
           this.drawSimple(this.sphere, subscene, context);
         } else 
-          result = result.concat(this.getSpherePieces(context, obj.id, i, this.sphere, obj.fastTransparency));
+          result = result.concat(this.getSpherePieces(context, i, obj));
       }
       if (drawing)
         this.disableArrays(obj, enabled);
       this.normMatrix = saveNorm;
       this.mvMatrix = saveMV;
+      this.prmvMatrix = savePRMV;
         
       return result;
     };
@@ -610,7 +716,6 @@
     /**
      * Prepare clipplanes for drawing
      * @param { object } obj - clip planes object
-     * @param { object } subscene
      */
     rglwidgetClass.prototype.drawClipplanes = function(obj) {
       var count = obj.offsets.length,
@@ -621,9 +726,20 @@
       obj.IMVClip = IMVClip;
       return [];
     };
-    
+
+    /**
+     * Prepare linestrip for drawing
+     * @param { object } obj - line strip object
+     * @param { object } subscene 
+     * @param { array } context 
+     */    
     rglwidgetClass.prototype.drawLinestrip = function(obj, subscene, context) {
-      var origIndices, i, j;
+      var origIndices, i, j, margin = obj.material.margin;
+ 
+      if (typeof margin !== "undefined") 
+        if (!this.marginVecToDataVec(obj, subscene))
+          return [];
+          
       if (this.opaquePass)
         return this.drawSimple(obj, subscene, context);
       origIndices = context.indices.slice();
@@ -646,28 +762,32 @@
      */
     rglwidgetClass.prototype.drawSprites = function(obj, subscene, context) {
       var flags = obj.flags,
-          is_transparent = flags & this.f_is_transparent,
-          sprites3d = flags & this.f_sprites_3d,
+          is_transparent = this.isSet(flags, this.f_is_transparent),
+          sprites3d = this.isSet(flags, this.f_sprites_3d),
           i,j,
           origMV = new CanvasMatrix4( this.mvMatrix ),
           origPRMV = null,
           pos, radius, userMatrix,
-          result = [];
+          result = [], margin = obj.material.margin;
+ 
+      if (typeof margin !== "undefined")
+        if (!this.marginVecToDataVec(obj, subscene))
+          return [];
 
-      if (!sprites3d) {
+      if (!sprites3d) 
         return this.drawSimple(obj, subscene, context);
-      }
       
       if (!obj.initialized)
-        this.initObj(obj.id);
+        this.initObj(obj);
 
       if (!obj.vertexCount)
-        return result;
+        return [];
     
-      is_transparent |= obj.someHidden;
+      is_transparent = is_transparent || obj.someHidden;
       
       var norigs = obj.vertices.length,
-          savenorm = new CanvasMatrix4(this.normMatrix);
+          savenorm = new CanvasMatrix4(this.normMatrix),
+          iOrig;
 
       this.normMatrix = subscene.spriteNormmat;
       userMatrix = obj.userMatrix;
@@ -698,7 +818,7 @@
           if (this.opaquePass)
             result = result.concat(this.drawObjId(obj.objects[i], subscene.id, context.concat(j)));
           else
-            this.drawObjId(obj.objects[i], subsene.id, context);
+            this.drawObjId(obj.objects[i], subscene.id, context);
       }
       this.normMatrix = savenorm;
       this.mvMatrix = origMV;
@@ -706,7 +826,117 @@
         this.prmvMatrix = origPRMV;
       return result;
     };
-   
+    
+    /**
+     * Draw object that might be in margin
+     * @param { Object } obj - text object to draw
+     * @param { Object } subscene - subscene holding it
+     * @param { Object } context - context for drawing
+     */
+    rglwidgetClass.prototype.drawMarginal = function(obj, subscene, context) {
+      var margin = obj.material.margin;
+ 
+      if (typeof margin !== "undefined") 
+        if (!this.marginVecToDataVec(obj, subscene))
+          return [];
+          
+      return this.drawSimple(obj, subscene, context);
+    };
+    
+    /**
+     * Draw bounding box and decorations
+     * @param { Object } obj - bboxdeco to draw
+     * @param { Object } subscene - subscene holding it
+     * @param { Object } context - context for drawing
+     */
+    rglwidgetClass.prototype.drawBBox = function(obj, subscene, context) {
+      var flags = obj.flags,
+          is_transparent = this.isSet(flags, this.f_is_transparent),
+          scale, bbox, indices,
+          enabled = {}, drawing,
+          result = [], idx, center, edges,
+          saved;
+
+      if (!obj.initialized)
+        this.initBBox(obj);
+      
+      is_transparent = is_transparent || obj.someHidden;
+
+      if (!this.opaquePass && !is_transparent)
+        return result;
+      
+      this.setBbox(obj, subscene);
+      
+      saved = this.setBBoxMatrices(obj);
+      
+      bbox = obj.bbox;
+      center = obj.center;
+
+      scale = [bbox[1]-bbox[0], bbox[3]-bbox[2], bbox[5]-bbox[4]];
+
+      if (!obj.cube.initialized) {
+        this.initObj(obj.cube);
+      }
+
+      if (this.opaquePass) {
+        context = context.slice();
+        context.push(obj.cube.id);
+      } 
+      
+      drawing = this.opaquePass !== is_transparent;
+      this.cube.onecolor = obj.cube.onecolor;
+      this.initShapeFromObj(this.cube, obj.cube);
+
+      if (!this.opaquePass)
+        indices = context.indices;
+
+      if (this.opaquePass)
+        idx = 0;
+      else
+        idx = context.subid;
+      if (typeof idx === "undefined")
+        console.error("idx is undefined");
+
+      if (drawing) {
+        this.drawSimple(this.cube, subscene, context);
+      } else 
+        result = result.concat(this.getCubePieces(context, obj));
+
+      if (drawing) {
+        if (!obj.ticks.initialized) {
+          obj.ticks.locations = this.getTickLocations(obj);
+          obj.ticks.edges = undefined;
+        }
+        edges = this.getTickEdges(this.prmvMatrix);
+        if (obj.needsAxisCallback) 
+          this.doAxisCallback(obj, edges);
+        if (!obj.ticks.edges || edges.toString() !== obj.ticks.edges.toString()) {
+          obj.ticks.edges = edges;
+          this.getTickVertices(obj.ticks);
+          this.placeTickLabels(obj);
+          this.setTickLabels(obj);
+        }
+        if (!obj.ticks.initialized) {
+          this.initObj(obj.ticks);
+          this.initObj(obj.labels);
+        }
+        this.drawSimple(obj.ticks, subscene, context);
+        this.drawSimple(obj.labels, subscene, context);
+      }
+      if (drawing)
+        this.disableArrays(obj, enabled);
+
+      this.restoreBBoxMatrices(saved);
+        
+      return result;
+    };
+    
+    /**
+     * Use ids to choose object to draw
+     * @param { numeric } id - object to draw
+     * @param { numeric } subscene
+     * @param { array } context
+     */   
     rglwidgetClass.prototype.drawObjId = function(id, subsceneid, context) {
       if (typeof id !== "number")
         this.alertOnce("drawObjId id is "+typeof id);
@@ -716,19 +946,21 @@
    
     /**
      * Draw an object in a subscene
-     * @param { number } obj - object to draw
-     * @param { number } subsceneid - id of subscene
+     * @param { object } obj - object to draw
+     * @param { object } subscene
+     * @param { array } context
      */
     rglwidgetClass.prototype.drawObj = function(obj, subscene, context) {
       switch(obj.type) {
         case "abclines":
         case "surface":
+          return this.drawSimple(obj, subscene, context);
+        case "points":
+        case "lines":  
         case "triangles":
         case "quads":
-        case "lines":
-        case "points":
         case "text":
-          return this.drawSimple(obj, subscene, context);
+          return this.drawMarginal(obj, subscene, context);
         case "linestrip":
           return this.drawLinestrip(obj, subscene, context);
         case "planes":
@@ -740,8 +972,9 @@
         case "sprites":
           return this.drawSprites(obj, subscene, context);
         case "light":
-        case "bboxdeco":
           return [];
+        case "bboxdeco":
+          return this.drawBBox(obj, subscene, context);
       }
       
       console.error("drawObj for type = "+obj.type);
@@ -755,16 +988,18 @@
     rglwidgetClass.prototype.drawBackground = function(id, subsceneid) {
       var gl = this.gl || this.initGL(),
           obj = this.getObj(id),
-          bg, i;
+          bg, i, savepr, savemv;
 
       if (!obj.initialized)
-        this.initObj(id);
+        this.initObj(obj);
 
       if (obj.colors.length) {
         bg = obj.colors[0];
         gl.clearColor(bg[0], bg[1], bg[2], bg[3]);
         gl.depthMask(true);
+        /* jshint bitwise: false */
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+        /* jshint bitwise: true */
         this.fogColor = bg;
       } else 
         this.fogColor = [0,0,0,0];
@@ -772,20 +1007,24 @@
       this.fogType = obj.fogtype;
       this.fogScale = obj.fogscale;
       if (typeof obj.quad !== "undefined") {
-        this.prMatrix.makeIdentity();
-        this.mvMatrix.makeIdentity();
+        savepr = this.prMatrix;
+        savemv = this.mvMatrix;
+        this.prMatrix = new CanvasMatrix4();
+        this.mvMatrix = new CanvasMatrix4();
         gl.disable(gl.BLEND);
         gl.disable(gl.DEPTH_TEST);
         gl.depthMask(false);
         for (i=0; i < obj.quad.length; i++)
           this.drawObjId(obj.quad[i], subsceneid);
+        this.prMatrix = savepr;
+        this.mvMatrix = savemv;
       }
     };
 
     /**
      * Draw a subscene
      * @param { number } subsceneid - id of subscene
-     * @param { boolean } opaquePass - is this the opaque drawing pass?
+     * @param { array } context 
      */
     rglwidgetClass.prototype.drawSubscene = function(subsceneid, context) {
       var sub = this.getObj(subsceneid),
@@ -804,11 +1043,15 @@
       	  obj = objects[subids[i]];
           flags = obj.flags;
           if (typeof flags !== "undefined") {
-          subscene_has_faces |= (flags & this.f_is_lit)
-                           & !(flags & this.f_fixed_quads);
-          obj.is_transparent = (flags & this.f_is_transparent) || obj.someHidden;
-          subscene_needs_sorting |= (flags & this.f_depth_sort) || obj.is_transparent;
-        }
+            subscene_has_faces = subscene_has_faces || 
+                            (this.isSet(flags, this.f_is_lit) &&
+                            !this.isSet(flags, this.f_fixed_quads));
+            obj.is_transparent = obj.someHidden || 
+              this.isSet(flags, this.f_is_transparent);
+            subscene_needs_sorting = subscene_needs_sorting || 
+              obj.is_transparent ||
+              this.isSet(flags, this.f_depth_sort);
+          }
         }
       }
 
@@ -823,7 +1066,7 @@
       if (subids.length) {
         if (subscene_has_faces) {
           this.setnormMatrix(subsceneid);
-          if ((sub.flags & this.f_sprites_3d) &&
+          if (this.isSet(sub.flags, this.f_sprites_3d) &&
               typeof sub.spriteNormmat === "undefined") {
             sub.spriteNormmat = new CanvasMatrix4(this.normMatrix);
           }
@@ -846,6 +1089,8 @@
         
           this.doBlending(false);
           this.subsceneid = subsceneid;
+          if (typeof this.sphere !== "undefined") // reset this.sphere.fastpieces; it will be recreated if needed
+            this.sphere.fastpieces = undefined;
           for (i = 0; i < subids.length; i++)
             result = result.concat(this.drawObjId(subids[i], subsceneid, context));
           subids = sub.subscenes;
@@ -858,6 +1103,7 @@
     
     /**
      * Set the context for drawing transparently
+     * @param { array } context
      */
     rglwidgetClass.prototype.setContext = function(context) {
       var result = [], objid, obj, type;
@@ -875,7 +1121,7 @@
             result = result.concat(context.pop());
             break;
           case "spheres":
-            this.initSphereFromObj(obj);
+            // this.initSphereFromObj(obj);  // FIXME:  not needed?
             break;
           default:
             console.error("bad type '", type, "' in setContext");
@@ -886,6 +1132,7 @@
     
     /**
      * Draw the transparent pieces of a scene
+     * @param {object} pieces
      */
     rglwidgetClass.prototype.drawPieces = function(pieces) {
       var i, prevcontext = [], context;

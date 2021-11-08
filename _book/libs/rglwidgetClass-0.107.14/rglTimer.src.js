@@ -1,4 +1,6 @@
 
+/* globals rgltimerClass: true */
+
 /**
  * The class of an rgl timer object
  * @class
@@ -42,8 +44,18 @@ rgltimerClass = function(Tick, startTime, interval, stopTime, stepSize, value, r
   this.Tick = Tick;
 };
 
+
+    /**
+     * Methods related to players
+     * @name ___METHODS_FOR_PLAYERS___
+     * @memberof rgltimerClass
+     * @kind function
+     * @instance
+     */
+
   /**
-   * Start playing timer object
+   * Start playing
+   * @memberof rgltimerClass
    */
   rgltimerClass.prototype.play = function() {
     if (this.enabled) {
@@ -126,7 +138,7 @@ rgltimerClass = function(Tick, startTime, interval, stopTime, stepSize, value, r
    * @param { number } newmult - new value
    */
   rgltimerClass.prototype.newmultiplier = function(newmult) {
-    if (newmult != this.multiplier) {
+    if (newmult !== this.multiplier) {
       this.realStart += 1000*(this.value - this.startTime)/this.rate*(1/this.multiplier - 1/newmult);
       this.multiplier = newmult;
     }

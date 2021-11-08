@@ -1,4 +1,12 @@
     /**
+     * Methods related to subscenes
+     * @name ___METHODS_FOR_SUBSCENES___
+     * @memberof rglwidgetClass
+     * @kind function
+     * @instance
+     */
+
+    /**
      * Is a particular id in a subscene?
      * @returns { boolean }
      * @param {number} id Which id?
@@ -70,13 +78,13 @@
           thesub = this.getObj(subscene),
           ids = [id],
           obj = this.getObj(id), i;
-      if (typeof obj != "undefined" && typeof (obj.newIds) !== "undefined") {
+      if (typeof obj !== "undefined" && typeof (obj.newIds) !== "undefined") {
         ids = ids.concat(obj.newIds);
       }
       thesub.objects = [].concat(thesub.objects);
       for (i = 0; i < ids.length; i++) {
         id = ids[i];
-        if (thesub.objects.indexOf(id) == -1) {
+        if (thesub.objects.indexOf(id) === -1) {
           thelist = this.whichList(id);
           thesub.objects.push(id);
           thesub[thelist].push(id);
@@ -93,7 +101,7 @@
       var thelist,
           thesub = this.getObj(subscene),
           obj = this.getObj(id),
-          ids = [id], i;
+          ids = [id], i, j;
       if (typeof obj !== "undefined" && typeof (obj.newIds) !== "undefined")
         ids = ids.concat(obj.newIds);
       thesub.objects = [].concat(thesub.objects); // It might be a scalar
@@ -150,4 +158,22 @@
         return(this.useid(sub.parent, type));
       else
         return subsceneid;
+    };
+
+    /**
+     * Find bboxdeco for a subscene
+     * @returns { number } id of bboxdeco, or undefined if none
+     * @param { number } sub- subscene
+     */
+    rglwidgetClass.prototype.getBBoxDeco = function(sub) {
+      var objects = sub.objects, i, obj;
+      for (i = 0; i < objects.length; i++) {
+        obj = this.getObj(objects[i]);
+        if (obj.type === "bboxdeco")
+          return obj;
+      }
+      if (sub.parent) 
+        return this.getBBoxDeco(sub.parent);
+      else
+        return undefined;
     };
