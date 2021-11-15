@@ -24,7 +24,7 @@
 <meta name="author" content="Pavel Logacev" />
 
 
-<meta name="date" content="2021-11-08" />
+<meta name="date" content="2021-11-15" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -318,7 +318,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <a class="sourceLine" id="cb152-2" title="2">vot_kor &lt;-<span class="st"> </span>readr<span class="op">::</span><span class="kw">read_tsv</span>(<span class="st">&quot;./data/VOT/songyuan.txt&quot;</span>) <span class="op">%&gt;%</span></a>
 <a class="sourceLine" id="cb152-3" title="3"><span class="st">              </span>dplyr<span class="op">::</span><span class="kw">select</span>(subject, gender, Item, WorldBet, TargetConsonant, TargetVowel, msVOT)</a></code></pre></div>
 <pre><code>## Rows: 399 Columns: 17</code></pre>
-<pre><code>## ── Column specification ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+<pre><code>## ── Column specification ───────────────────────────────────────────────────────────────────────────────────────────
 ## Delimiter: &quot;\t&quot;
 ## chr (8): utt, subject, gender, Item, WorldBet, TargetConsonant, TargetVowel,...
 ## dbl (9): StartTime, EndTime, Burst, VOT, VowelEnd, msVOT, msVowel, logVOT, l...</code></pre>
@@ -582,19 +582,19 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 ## 
 ## Population-Level Effects: 
 ##                          Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS
-## Intercept                   52.50      0.87    50.80    54.18 1.00     3906
-## c_is_english                -7.82      1.06    -9.94    -5.74 1.00     3543
-## c_is_voiced                -66.13      1.76   -69.56   -62.61 1.00     2664
-## c_is_english:c_is_voiced     6.36      2.15     2.08    10.55 1.00     2707
+## Intercept                   52.49      0.88    50.78    54.24 1.00     4086
+## c_is_english                -7.82      1.06    -9.98    -5.78 1.00     4221
+## c_is_voiced                -66.09      1.73   -69.52   -62.74 1.00     2523
+## c_is_english:c_is_voiced     6.33      2.09     2.14    10.45 1.00     2381
 ##                          Tail_ESS
-## Intercept                    2758
-## c_is_english                 2786
-## c_is_voiced                  2829
-## c_is_english:c_is_voiced     2939
+## Intercept                    2899
+## c_is_english                 2740
+## c_is_voiced                  2793
+## c_is_english:c_is_voiced     2658
 ## 
 ## Family Specific Parameters: 
 ##       Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
-## sigma    17.64      0.34    16.98    18.32 1.00     4522     2838
+## sigma    17.65      0.34    17.01    18.31 1.00     4223     3057
 ## 
 ## Draws were sampled using sampling(NUTS). For each parameter, Bulk_ESS
 ## and Tail_ESS are effective sample size measures, and Rhat is the potential

@@ -113,7 +113,7 @@ Okay that's the maths, how do we get the magic computing box to do the work for 
 (12 + 17 + 14 + 15 + 4) / 5
 
 ```
-... in which case R outputs the answer 36.6, just as if it were a calculator. 
+... in which case R outputs the answer 12.4, just as if it were a calculator. 
 
 - However, we learned quicker ways of doing that 
 ```{r}
